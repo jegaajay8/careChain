@@ -8,6 +8,20 @@ Tech Stack:
 - CSS
 - JavaScript
 
+
+frontend/
+│
+├── index.html          → HOME
+│   ├── login.html      → LOGIN page
+│   │     └── role-check.js → Redirects to dashboard based on role
+│   └── signup.html     → SIGN UP page
+│           └── role-select.js → Hospital / Donor selection → Redirects to dashboard
+│
+└── dashboard.html      → USER DASHBOARD
+      ├── Hospital Panel
+      └── Donor Panel
+
+
 - ┌───────────────┐
 │     HOME      │
 └───────────────┘
