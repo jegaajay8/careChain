@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CareChain Dashboard</title>
+<style>
+  /* Reset & basic styles */
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+  body { display: flex; min-height: 100vh; background: #f4f6f9; }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    background: #2f3e46;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+  }
+  .sidebar h2 { margin-bottom: 30px; font-size: 22px; }
+  .sidebar a {
+    color: #fff;
+    text-decoration: none;
+    margin: 10px 0;
+    padding: 8px 12px;
+    border-radius: 4px;
+    display: block;
+  }
+  .sidebar a:hover { background: #354f52; }
+
+  /* Main content */
+  .main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top navbar */
+  .navbar {
+    height: 60px;
+    background: #52796f;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    justify-content: space-between;
+  }
+
+  /* Content area */
+  .content {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* center cards and map */
+  }
+
+  /* Cards */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 30px; /* space between cards and map */
+  }
+  .card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    text-align: center;
+  }
+  .card h3 { font-size: 18px; margin-bottom: 10px; }
+  .card p { font-size: 16px; color: #555; }
+
+  /* Map */
+  .map-container {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+  }
+  .map-container h2 {
+    margin-bottom: 15px;
+    color: #333;
+  }
+  .map-container img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  }
+
+  /* Footer */
+  .footer {
+    height: 40px;
+    background: #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    margin-top: auto;
+    width: 100%;
+  }
+
+</style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>CareChain</h2>
+    <a href="#">Dashboard</a>
+    <a href="#">Users</a>
+    <a href="#">Reports</a>
+    <a href="#">Settings</a>
+    <a href="#">Logout</a>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+    <!-- Top Navbar -->
+    <div class="navbar">
+      <div>Welcome, Admin</div>
+      <div>Notifications 🔔</div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="content">
+      <h1>Dashboard</h1>
+      <div class="cards">
+        <div class="card">
+          <h3>Total Users</h3>
+          <p id="totalUsers">0</p>
+        </div>
+        <div class="card">
+          <h3>Active Sessions</h3>
+          <p id="activeSessions">0</p>
+        </div>
+        <div class="card">
+          <h3>New Signups</h3>
+          <p id="newSignups">0</p>
+        </div>
+        <div class="card">
+          <h3>Server Status</h3>
+          <p id="serverStatus">Online</p>
+        </div>
+      </div>
+
+      <!-- Sri Lanka Map -->
+      <div class="map-container">
+        <h2>Sri Lanka Map</h2>
+        <img src="assets/sri-lanka.jpg" alt="Sri Lanka Map">
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      &copy; 2026 CareChain. All rights reserved.
+    </div>
+  </div>
+
+<script>
+  // Example JS to populate card data
+  document.getElementById('totalUsers').textContent = 120;
+  document.getElementById('activeSessions').textContent = 8;
+  document.getElementById('newSignups').textContent = 5;
+</script>
+
+</body>
+</html>
