@@ -1,216 +1,74 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CareChain | Secure Access</title>
+  <title>CareChain Login</title>
   <style>
-    :root {
-      --brand-red: #c62828;      /* Primary Red */
-      --brand-hover: #b71c1c;    /* Hover Red */
-      --text-dark: #1a1a1b;
-      --text-muted: #4a5568;
-      --bg-light: #fdfdfd;
-      --accent-gray: #e2e8f0;
-    }
-
     body {
-      font-family: 'Inter', -apple-system, sans-serif;
-      /* Subtle medical red background */
-      background: linear-gradient(135deg, #fbe9e7, #f3f7f7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
+      font-family: Arial;
+      max-width: 400px;
+      margin: auto;
+      padding-top: 50px;
     }
-
-    .login-box {
-      background: #ffffff;
-      width: 420px;
-      padding: 48px;
-      border-radius: 20px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
-      animation: slideUp 0.6s ease-out;
-      border: 1px solid var(--accent-gray);
-    }
-
-    .brand-header {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .brand-header h2 {
-      font-size: 32px;
-      font-weight: 800;
-      color: var(--brand-red);
-      margin: 0;
-      letter-spacing: -1px;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      color: var(--text-muted);
+    input, button {
+      width: 100%;
+      padding: 8px;
       margin-top: 8px;
-      font-weight: 500;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-dark);
-      margin-top: 18px;
-      margin-bottom: 6px;
-    }
-
-    input[type="text"],
-    input[type="password"] {
-      width: 100%;
-      padding: 14px;
-      border: 2px solid var(--accent-gray);
-      border-radius: 10px;
-      font-size: 15px;
       box-sizing: border-box;
-      transition: all 0.2s ease;
-      background: var(--bg-light);
     }
-
-    input:focus {
-      outline: none;
-      border-color: var(--brand-red);
-      background: #fff;
-      box-shadow: 0 0 0 4px rgba(198,40,40,0.1);
-    }
-
-    .login-btn {
-      width: 100%;
-      padding: 14px;
-      margin-top: 28px;
-      border: none;
-      border-radius: 10px;
-      background: var(--brand-red);
-      color: white;
-      font-size: 16px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 4px 6px rgba(198, 40, 40, 0.2);
-    }
-
-    .login-btn:hover {
-      background: var(--brand-hover);
-      transform: translateY(-1px);
-      box-shadow: 0 7px 14px rgba(198, 40, 40, 0.3);
-    }
-
     .row {
-      margin-top: 20px;
+      margin-top: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 14px;
     }
-
-    .checkbox-container {
+    .row label {
       display: flex;
       align-items: center;
-      color: var(--text-muted);
-      cursor: pointer;
+      gap: 5px;
+      margin: 0;
     }
-
-    .checkbox-container input {
-      margin-right: 8px;
-      accent-color: var(--brand-red);
-    }
-
-    .forgot-link {
-      text-decoration: none;
-      color: var(--brand-red);
-      font-weight: 600;
-    }
-
-    .forgot-link:hover { text-decoration: underline; }
-
     .or-divider {
-      display: flex;
-      align-items: center;
       text-align: center;
-      margin: 30px 0;
-      color: #cbd5e0;
-    }
-
-    .or-divider::before, .or-divider::after {
-      content: '';
-      flex: 1;
-      border-bottom: 1px solid var(--accent-gray);
-    }
-    .or-divider span { padding: 0 10px; font-size: 12px; font-weight: 700; color: #a0aec0; }
-
-    .signup-btn {
-      width: 100%;
-      padding: 12px;
-      background: transparent;
-      color: var(--text-dark);
-      border: 2px solid var(--accent-gray);
-      border-radius: 10px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    .signup-btn:hover {
-      background: #f7fafc;
-      border-color: var(--text-dark);
-    }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      margin: 20px 0;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-<div class="login-box">
-  <div class="brand-header">
-    <h2>CareChain</h2>
-    <div class="subtitle">Comprehensive Organ & Blood Donation Emergency System</div>
-  </div>
+<h2>Login</h2>
 
-  <label for="username">Username or Email</label>
-  <input type="text" id="username" placeholder="name@hospital.com">
+<!-- Login Form -->
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
 
-  <label for="password">Password</label>
-  <input type="password" id="password" placeholder="••••••••">
-
-  <div class="row">
-    <label class="checkbox-container">
-      <input type="checkbox" id="remember"> Remember me
-    </label>
-    <a href="#" class="forgot-link">Forgot Password?</a>
-  </div>
-
-  <button class="login-btn" onclick="login()">Log In</button>
-
-  <div class="or-divider"><span>NEW TO CARECHAIN?</span></div>
-
-  <button class="signup-btn" onclick="window.location.href='signup.html'">
-    Create an Account
-  </button>
+<div class="row">
+  <label>
+    <input type="checkbox" id="remember"> Remember me
+  </label>
+  <a href="#" onclick="alert('Forgot password flow later')">Forgot password?</a>
 </div>
 
+<button onclick="login()">Login</button>
+
+<div class="or-divider">OR</div>
+
+<!-- Signup Button -->
+<button onclick="window.location.href='signup.html'">Sign Up</button>
 <script>
+const API = "http://localhost:4000"
+
 async function login() {
-  const user = document.getElementById('username').value;
-  const pass = document.getElementById('password').value;
-  
-  if(!user || !pass) {
-    alert("Please fill in all fields");
-    return;
-  }
-  console.log("Attempting login for:", user);
+  const res = await fetch(API + "/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      username: username.value,
+      password: password.value,
+      remember: remember.checked
+    })
+  })
+  alert(await res.text())
 }
 </script>
 
