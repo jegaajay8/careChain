@@ -1,148 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>CareChain Dashboard</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-  body { display: flex; min-height: 100vh; background: #f4f6f9; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareChain | Secure Medical Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Perfect Contrast Palette */
+      --brand-red: #d32f2f;
+      --brand-soft: #fff1f0;
+      --text-main: #1a202c;
+      --text-muted: #64748b;
+      /* Picturesque Gradient Background */
+      --bg-gradient: linear-gradient(135deg, #fdf2f2 0%, #f0f9ff 100%);
+      --glass-bg: rgba(255, 255, 255, 0.85);
+      --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
 
-  .sidebar {
-    width: 220px;
-    background: #2f3e46;
-    color: #fff;
-    padding: 20px;
-  }
-  .sidebar h2 { margin-bottom: 30px; }
-  .sidebar a {
-    color: #fff;
-    text-decoration: none;
-    margin: 10px 0;
-    padding: 8px 12px;
-    border-radius: 4px;
-    display: block;
-  }
-  .sidebar a:hover { background: #354f52; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
 
-  .main { flex: 1; display: flex; flex-direction: column; }
+    body {
+      min-height: 100vh;
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      display: flex;
+      color: var(--text-main);
+    }
 
-  .navbar {
-    height: 60px;
-    background: #52796f;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    justify-content: space-between;
-  }
+    /* Sidebar - Modern & Light */
+    .sidebar {
+      width: 280px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      border-right: 1px solid rgba(211, 47, 47, 0.1);
+      padding: 40px 24px;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      position: sticky;
+      top: 0;
+      transition: all 0.3s ease;
+    }
 
-  .content {
-    padding: 20px;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+    .sidebar h2 {
+      color: var(--brand-red);
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 40px;
+      letter-spacing: -1px;
+      text-align: center;
+    }
 
-  .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 20px;
-    width: 100%;
-    max-width: 900px;
-    margin-bottom: 30px;
-  }
+    .sidebar a {
+      text-decoration: none;
+      color: var(--text-muted);
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin: 4px 0;
+      font-weight: 600;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
 
-  .card {
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    text-align: center;
-  }
+    .sidebar a:hover, .sidebar a.active {
+      background: var(--brand-red);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(211, 47, 47, 0.2);
+    }
 
-  .footer {
-    height: 40px;
-    background: #ddd;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-</style>
+    /* Main Content Area */
+    .main { flex: 1; padding: 40px 60px; }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .welcome-box h1 { font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
+    .welcome-box p { color: var(--text-muted); font-size: 15px; margin-top: 4px; }
+
+    /* Top Stats Grid */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 24px;
+    }
+
+    .card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(10px);
+      padding: 30px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: var(--card-shadow);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    .card h3 {
+      font-size: 13px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .card .value {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text-main);
+    }
+
+    .card .sub-value {
+      margin-top: 8px;
+      font-size: 14px;
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: #e6fffa;
+      color: #047857;
+      font-weight: 600;
+    }
+
+    /* Alert Style Value */
+    .critical { color: var(--brand-red) !important; }
+
+    .footer {
+      margin-top: 60px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Animation */
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card { animation: slideIn 0.5s ease forwards; }
+
+    /* Responsiveness */
+    @media (max-width: 768px) {
+      body { flex-direction: column; }
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .main { padding: 20px; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- Sidebar -->
-<div class="sidebar">
-  <h2>CareChain</h2>
-  <div id="menu"></div>
-</div>
+  <aside class="sidebar">
+    <h2>CareChain</h2>
+    <div id="nav-links">
+      </div>
+    
+    <div style="margin-top: auto;">
+      <a href="#" style="color: #ef4444;">Logout</a>
+    </div>
+  </aside>
 
-<!-- Main -->
-<div class="main">
-  <div class="navbar">
-    <div id="welcomeText"></div>
-    <div>🔔</div>
-  </div>
+  <main class="main">
+    <header class="navbar">
+      <div class="welcome-box">
+        <h1 id="userTitle">Loading Dashboard...</h1>
+        <p id="userSubtitle">Secure Emergency Portal Access</p>
+      </div>
+      <div style="font-size: 24px; cursor: pointer;">🔔</div>
+    </header>
 
-  <div class="content">
-    <h1 id="dashboardTitle"></h1>
+    <div class="cards" id="statsGrid">
+      </div>
 
-    <div class="cards" id="cards"></div>
-  </div>
+    <footer class="footer">
+      © 2026 CareChain • Advanced Organ & Blood Logistics • v2.4.0
+    </footer>
+  </main>
 
-  <div class="footer">© 2026 CareChain</div>
-</div>
+  <script>
+    // Configuration
+    const userType = "hospital"; // Switch to "donor" to see the other version
 
-<script>
-  // 🔑 ROLE COMES FROM LOGIN (backend later)
-  const userRole = "hospital"; // "donor"
+    const navLinks = document.getElementById('nav-links');
+    const statsGrid = document.getElementById('statsGrid');
+    const userTitle = document.getElementById('userTitle');
 
-  const menu = document.getElementById("menu");
-  const cards = document.getElementById("cards");
-  const title = document.getElementById("dashboardTitle");
-  const welcome = document.getElementById("welcomeText");
+    const data = {
+      hospital: {
+        title: "Hospital Control Center",
+        links: ["Dashboard", "Patient Registry", "Blood Requests", "Inventory Management"],
+        stats: [
+          { label: "Total Patients", value: "128", sub: "Active cases" },
+          { label: "Blood Requests", value: "14", sub: "URGENT", critical: true },
+          { label: "Available Units", value: "342", sub: "Stable" },
+          { label: "System Status", value: "Live", sub: "Operational" }
+        ]
+      },
+      donor: {
+        title: "Donor Personal Hub",
+        links: ["My Profile", "Donation History", "Find Centers", "Rewards"],
+        stats: [
+          { label: "Total Donations", value: "8", sub: "Hero Level" },
+          { label: "Next Eligibility", value: "12d", sub: "Wait Period" },
+          { label: "Blood Group", value: "A+", sub: "Universal" },
+          { label: "CarePoints", value: "1,200", sub: "Silver Badge" }
+        ]
+      }
+    };
 
-  if (userRole === "hospital") {
-    welcome.textContent = "Welcome, Hospital Admin";
-    title.textContent = "Hospital Dashboard";
+    function loadInterface(role) {
+      const config = data[role];
+      userTitle.textContent = config.title;
 
-    menu.innerHTML = `
-      <a href="#">Dashboard</a>
-      <a href="#">Patients</a>
-      <a href="#">Blood Requests</a>
-      <a href="#">Inventory</a>
-      <a href="#">Logout</a>
-    `;
+      // Render Navigation
+      navLinks.innerHTML = config.links.map((link, index) => `
+        <a href="#" class="${index === 0 ? 'active' : ''}">${link}</a>
+      `).join('');
 
-    cards.innerHTML = `
-      <div class="card"><h3>Total Patients</h3><p>120</p></div>
-      <div class="card"><h3>Blood Requests</h3><p>18</p></div>
-      <div class="card"><h3>Available Units</h3><p>240</p></div>
-      <div class="card"><h3>Status</h3><p>Operational</p></div>
-    `;
-  }
+      // Render Stats
+      statsGrid.innerHTML = config.stats.map(item => `
+        <div class="card">
+          <h3>${item.label}</h3>
+          <div class="value ${item.critical ? 'critical' : ''}">${item.value}</div>
+          <div class="sub-value" style="${item.critical ? 'background:#fee2e2; color:#b91c1c;' : ''}">
+            ${item.sub}
+          </div>
+        </div>
+      `).join('');
+    }
 
-  if (userRole === "donor") {
-    welcome.textContent = "Welcome, Donor";
-    title.textContent = "Donor Dashboard";
-
-    menu.innerHTML = `
-      <a href="#">Dashboard</a>
-      <a href="#">My Donations</a>
-      <a href="#">Nearby Hospitals</a>
-      <a href="#">Profile</a>
-      <a href="#">Logout</a>
-    `;
-
-    cards.innerHTML = `
-      <div class="card"><h3>Total Donations</h3><p>6</p></div>
-      <div class="card"><h3>Last Donation</h3><p>2 Months Ago</p></div>
-      <div class="card"><h3>Eligibility</h3><p>Eligible</p></div>
-      <div class="card"><h3>Rewards</h3><p>12 Points</p></div>
-    `;
-  }
-</script>
-
+    loadInterface(userType);
+  </script>
 </body>
 </html>
