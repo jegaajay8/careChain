@@ -1,72 +1,95 @@
-import express from "express"
-import bcrypt from "bcrypt"
-import jwt from "jsonwebtoken"
-import cors from "cors"
-import pkg from "pg"
+const express = require("express");
+const cors = require("cors");
+const db = require("./db");
 
-const { Pool } = pkg
-const app = express()
+const app = express();
 
-app.use(express.json())
-app.use(cors())
+app.use(cors());
+app.use(express.json());
 
-// PostgreSQL connection
-const pool = new Pool({
-  user: "postgres",
-  host: "localhost",
-  database: "carechain",
-  password: "",       // ← put your postgres password if you set one
-  port: 5432
-})
+/* ==========================
+   REGISTER DONOR
+========================== */
+app.post("/register-donor", (req, res) => {
 
-// SIGN UP
-app.post("/signup", async (req, res) => {
-  const { username, password } = req.body
+    const { username, password, fullname, nic, telephone,
+        blood_group, district, city, road, postal_code } = req.body;
 
-  if (!username || !password)
-    return res.status(400).json({ error: "Missing fields" })
+    const sql1 = "INSERT INTO users (username, password, role) VALUES (?, ?, 'donor')";
 
-  const hashedPassword = await bcrypt.hash(password, 10)
+    db.query(sql1, [username, password], (err, result) => {
 
-  try {
-    await pool.query(
-      "INSERT INTO users (username, password) VALUES ($1, $2)",
-      [username, hashedPassword]
-    )
-    res.json({ message: "Signup successful" })
-  } catch (err) {
-    res.status(400).json({ error: "User already exists" })
-  }
-})
+        if (err) {
+            res.json({ message: "User error" });
+        } else {
 
-// LOGIN
-app.post("/login", async (req, res) => {
-  const { username, password, remember } = req.body
+            const user_id = result.insertId;
 
-  const result = await pool.query(
-    "SELECT * FROM users WHERE username=$1",
-    [username]
-  )
+            const sql2 = "INSERT INTO donors (user_id, fullname, nic, telephone, blood_group, district, city, road, postal_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-  if (result.rows.length === 0)
-    return res.status(401).json({ error: "User not found" })
+            db.query(sql2,
+                [user_id, fullname, nic, telephone, blood_group, district, city, road, postal_code],
+                (err2) => {
+                    if (err2) {
+                        res.json({ message: "Donor error" });
+                    } else {
+                        res.json({ message: "Donor Registered" });
+                    }
+                });
+        }
+    });
+});
 
-  const user = result.rows[0]
-  const valid = await bcrypt.compare(password, user.password)
 
-  if (!valid)
-    return res.status(401).json({ error: "Wrong password" })
+/* ==========================
+   REGISTER HOSPITAL
+========================== */
+app.post("/register-hospital", (req, res) => {
 
-  const token = jwt.sign(
-    { id: user.id },
-    "secretkey",
-    { expiresIn: remember ? "7d" : "1h" }
-  )
+    const { username, password, hospital_name, hospital_id,
+        district, city, road, postal_code } = req.body;
 
-  res.json({ message: "Login success", token })
-})
+    const sql1 = "INSERT INTO users (username, password, role) VALUES (?, ?, 'hospital')";
 
-// START SERVER
-app.listen(4000, () =>
-  console.log("Backend running at http://localhost:4000")
-)
+    db.query(sql1, [username, password], (err, result) => {
+
+        if (err) {
+            res.json({ message: "User error" });
+        } else {
+
+            const user_id = result.insertId;
+
+            const sql2 = "INSERT INTO hospitals (user_id, hospital_name, hospital_id, district, city, road, postal_code) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+            db.query(sql2,
+                [user_id, hospital_name, hospital_id, district, city, road, postal_code],
+                (err2) => {
+                    if (err2) {
+                        res.json({ message: "Hospital error" });
+                    } else {
+                        res.json({ message: "Hospital Registered" });
+                    }
+                });
+        }
+    });
+});
+
+
+/* ==========================
+   LOGIN
+========================== */
+app.post("/login", (req, res) => {
+
+    const { username, password } = req.body;
+
+    const sql = "SELECT * FROM users WHERE username=? AND password=?";
+
+    db.query(sql, [username, password], (err, result) => {
+
+        if (result.length > 0) {
+            res.json(result[0]);
+        } else {
+            res.json({ message: "Invalid login" });
+        }
+    });
+});
