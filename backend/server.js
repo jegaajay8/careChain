@@ -196,3 +196,32 @@ app.get("/donor-profile/:user_id", (req, res) => {
         res.json(result[0]);
     });
 });
+
+//GET REQUESTS FOR DONOR
+
+app.get("/get-requests/:user_id", (req, res) => {
+
+    const user_id = req.params.user_id;
+
+    const donorSql = "SELECT * FROM donors WHERE user_id=?";
+
+    db.query(donorSql, [user_id], (err, donorResult) => {
+
+        const donor = donorResult[0];
+
+        const requestSql = `
+            SELECT r.*, h.hospital_name
+            FROM requests r
+            JOIN hospitals h ON r.hospital_id = h.id
+            WHERE r.blood_group=? 
+            AND r.district=? 
+            AND r.status='open'
+        `;
+
+        db.query(requestSql,
+            [donor.blood_group, donor.district],
+            (err2, requests) => {
+                res.json(requests);
+            });
+    });
+});
