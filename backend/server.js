@@ -162,3 +162,38 @@ app.post("/add-patient", (req, res) => {
         });
     });
 });
+
+
+// SEND REQUEST
+
+app.post("/send-request", (req, res) => {
+
+    const { hospital_user_id, blood_group, district } = req.body;
+
+    const findHospital = "SELECT id FROM hospitals WHERE user_id=?";
+
+    db.query(findHospital, [hospital_user_id], (err, result) => {
+
+        const hospital_id = result[0].id;
+
+        const sql = "INSERT INTO requests (hospital_id, blood_group, district, status) VALUES (?, ?, ?, 'open')";
+
+        db.query(sql, [hospital_id, blood_group, district], () => {
+            res.json({ message: "Request sent" });
+        });
+    });
+});
+
+// DONOR PROFILE
+
+app.get("/donor-profile/:user_id", (req, res) => {
+
+    const user_id = req.params.user_id;
+
+    const sql = "SELECT * FROM donors WHERE user_id=?";
+
+    db.query(sql, [user_id], (err, result) => {
+        res.json(result[0]);
+    });
+});
+
