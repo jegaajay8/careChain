@@ -196,4 +196,3 @@ app.get("/donor-profile/:user_id", (req, res) => {
         res.json(result[0]);
     });
 });
-
