@@ -7,9 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* ==========================
-   REGISTER DONOR
-========================== */
+
+//REGISTER DONOR
+
 app.post("/register-donor", (req, res) => {
 
     const { username, password, fullname, nic, telephone,
@@ -41,9 +41,8 @@ app.post("/register-donor", (req, res) => {
 });
 
 
-/* ==========================
-   REGISTER HOSPITAL
-========================== */
+//REGISTER HOSPITAL
+
 app.post("/register-hospital", (req, res) => {
 
     const { username, password, hospital_name, hospital_id,
@@ -74,10 +73,8 @@ app.post("/register-hospital", (req, res) => {
     });
 });
 
+//LOGIN
 
-/* ==========================
-   LOGIN
-========================== */
 app.post("/login", (req, res) => {
 
     const { username, password } = req.body;
@@ -91,5 +88,77 @@ app.post("/login", (req, res) => {
         } else {
             res.json({ message: "Invalid login" });
         }
+    });
+});
+
+//DELETE DONOR ACCOUNT
+
+app.post("/delete-donor-account", (req, res) => {
+
+    const { user_id } = req.body;
+
+    // First get donor id
+    db.query("SELECT id FROM donors WHERE user_id=?", [user_id], (err, result) => {
+
+        if (result.length === 0) {
+            return res.json({ message: "Donor not found" });
+        }
+
+        const donor_id = result[0].id;
+
+        // Delete requests where donor accepted
+        db.query("DELETE FROM requests WHERE accepted_donor_id=?", [donor_id], () => {
+
+            // Delete from donors table
+            db.query("DELETE FROM donors WHERE user_id=?", [user_id], () => {
+
+                // Delete from users table
+                db.query("DELETE FROM users WHERE id=?", [user_id], () => {
+
+                    res.json({ message: "Account Deleted" });
+
+                });
+
+            });
+
+        });
+
+    });
+});
+
+//GET DONOR DETAILS
+
+app.get("/donor-details/:donor_id", (req, res) => {
+
+    const donor_id = req.params.donor_id;
+
+    db.query("SELECT * FROM donors WHERE id=?", [donor_id], (err, result) => {
+
+        if (result.length > 0) {
+            res.json(result[0]);
+        } else {
+            res.json({});
+        }
+
+    });
+});
+
+//ADD PATIENT
+
+app.post("/add-patient", (req, res) => {
+
+    const { hospital_user_id, fullname, nic, blood_group } = req.body;
+
+    const findHospital = "SELECT id FROM hospitals WHERE user_id=?";
+
+    db.query(findHospital, [hospital_user_id], (err, result) => {
+
+        const hospital_id = result[0].id;
+
+        const sql = "INSERT INTO patients (hospital_id, fullname, nic, blood_group) VALUES (?, ?, ?, ?)";
+
+        db.query(sql, [hospital_id, fullname, nic, blood_group], () => {
+            res.json({ message: "Patient added" });
+        });
     });
 });
