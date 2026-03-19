@@ -226,7 +226,7 @@ app.get("/get-requests/:user_id", (req, res) => {
     });
 });
 
-//ACCEPT REQUEST
+//ACCEPT  REQUEST
 
 app.post("/accept-request", (req, res) => {
 
