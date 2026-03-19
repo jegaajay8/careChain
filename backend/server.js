@@ -245,3 +245,29 @@ app.post("/accept-request", (req, res) => {
         });
     });
 });
+
+
+//GET ACCEPTED DONORS
+
+app.get("/accepted-donors/:user_id", (req, res) => {
+
+    const user_id = req.params.user_id;
+
+    const findHospital = "SELECT id FROM hospitals WHERE user_id=?";
+
+    db.query(findHospital, [user_id], (err, result) => {
+
+        const hospital_id = result[0].id;
+
+        const sql = `
+        SELECT r.id as request_id, d.id as donor_id, d.fullname, d.telephone, d.blood_group
+        FROM requests r
+        JOIN donors d ON r.accepted_donor_id = d.id
+        WHERE r.hospital_id=? AND r.status='closed'
+        `;
+
+        db.query(sql, [hospital_id], (err2, donors) => {
+            res.json(donors);
+        });
+    });
+});
