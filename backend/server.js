@@ -225,3 +225,23 @@ app.get("/get-requests/:user_id", (req, res) => {
             });
     });
 });
+
+//ACCEPT REQUEST
+
+app.post("/accept-request", (req, res) => {
+
+    const { request_id, donor_user_id } = req.body;
+
+    const findDonor = "SELECT id FROM donors WHERE user_id=?";
+
+    db.query(findDonor, [donor_user_id], (err, result) => {
+
+        const donor_id = result[0].id;
+
+        const sql = "UPDATE requests SET status='closed', accepted_donor_id=? WHERE id=?";
+
+        db.query(sql, [donor_id, request_id], () => {
+            res.json({ message: "Accepted" });
+        });
+    });
+});
