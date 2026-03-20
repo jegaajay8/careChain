@@ -9,24 +9,24 @@ function DonorDashboard({ user, logout }) {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    const loadProfile = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`http://localhost:5001/donor-profile/${user.id}`);
+        if (!res.ok) throw new Error("Failed to fetch profile");
+        const data = await res.json();
+        setProfile(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadProfile();
-  }, []);
+  }, [user.id]);
 
-  // ---------------- API CALLS ----------------
-  const loadProfile = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`http://localhost:5001/donor-profile/${user.id}`);
-      if (!res.ok) throw new Error("Failed to fetch profile");
-      const data = await res.json();
-      setProfile(data);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  
   const loadRequests = async () => {
     setLoading(true);
     try {

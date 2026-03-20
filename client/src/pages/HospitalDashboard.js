@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 function HospitalDashboard({ user, logout }) {
   const [section, setSection] = useState("patients");
@@ -7,7 +7,7 @@ function HospitalDashboard({ user, logout }) {
   const [error, setError] = useState("");
 
   // ---------------- Load Accepted Donors ----------------
-  const loadAcceptedDonors = async () => {
+  const loadAcceptedDonors = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`http://localhost:5001/accepted-donors/${user.id}`);
@@ -19,7 +19,7 @@ function HospitalDashboard({ user, logout }) {
     } finally {
       setLoading(false);
     }
-  };
+   }, [user.id]);
 
   // ----------------- RENDER -----------------
   return (
@@ -88,9 +88,7 @@ function PatientSection({ user }) {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => { loadPatients(); }, []);
-
-  const loadPatients = async () => {
+  const loadPatients = useCallback(async () => {
     setLoading(true);
     try {
       const res = await fetch(`http://localhost:5001/get-patients/${user.id}`);
@@ -101,7 +99,13 @@ function PatientSection({ user }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user.id]);
+
+
+  useEffect(() => {
+    loadPatients();
+  }, [loadPatients]);
+
 
   const handleSubmit = async () => {
     if (!form.fullname || !form.nic || !form.blood_group) return alert("Fill all fields");
