@@ -1,22 +1,74 @@
+/* General Layout */
 body {
-    font-family: Arial;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-align: center;
-    background-color: #f2f2f2;
+    background-color: #fdfdfd; /* Lighter, cleaner background */
+    margin: 0;
+    padding: 20px;
+    color: #333;
 }
 
+/* Container for Forms (Login/Register) */
+.App {
+    background-color: white;
+    max-width: 450px;
+    margin: 40px auto;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Adds depth */
+}
+
+/* Headers */
+h2 {
+    color: #c0392b; /* Blood red for the medical theme */
+    margin-bottom: 25px;
+}
+
+/* Input Fields */
 input {
-    padding: 8px;
-    width: 250px;
+    padding: 12px;
+    width: 100%; /* Makes inputs responsive to the container */
+    max-width: 320px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box; /* Ensures padding doesn't break width */
 }
 
+input:focus {
+    outline: none;
+    border-color: #e74c3c; /* Red border when typing */
+    box-shadow: 0 0 5px rgba(231, 76, 60, 0.2);
+}
+
+/* Primary Buttons */
 button {
-    padding: 8px 15px;
-    background-color: #007bff;
+    padding: 12px 25px;
+    background-color: #e74c3c; /* Red theme for CareChain */
     color: white;
     border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 16px;
     cursor: pointer;
+    transition: background 0.3s ease;
 }
 
 button:hover {
-    background-color: #0056b3;
+    background-color: #c0392b; /* Darker red on hover */
+}
+
+/* Secondary/Back Buttons */
+.back-btn {
+    background-color: transparent;
+    color: #7f8c8d;
+    font-size: 14px;
+    margin-top: 15px;
+}
+
+.back-btn:hover {
+    background-color: transparent;
+    color: #c0392b;
+    text-decoration: underline;
 }
