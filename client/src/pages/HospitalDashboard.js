@@ -1,239 +1,137 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 function HospitalDashboard({ user, logout }) {
     const [acceptedDonors, setAcceptedDonors] = useState([]);
+    const [section, setSection] = useState("patient"); // Default section
 
     const loadAcceptedDonors = async () => {
-        const res = await fetch("http://localhost:5000/accepted-donors/" + user.id);
-        const data = await res.json();
-        setAcceptedDonors(data);
+        try {
+            const res = await fetch("http://localhost:5001/accepted-donors/" + user.id);
+            const data = await res.json();
+            setAcceptedDonors(data);
+        } catch (err) {
+            console.error("Error loading donors:", err);
+        }
     };
 
-    const [section, setSection] = useState("");
-
     return (
-        <div>
-            <button onClick={logout}>Logout</button>
-            <br /><br />
+        <div className="App" style={{ maxWidth: "800px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <button className="back-btn" onClick={logout}>Logout</button>
+                <p>Hospital: <strong>{user.username}</strong></p>
+            </div>
+            
             <h2>Hospital Dashboard</h2>
 
-            <p>Welcome: {user.username}</p>
+            <div className="tab-menu" style={{ marginBottom: "20px" }}>
+                <button onClick={() => setSection("patient")}>Patients</button>
+                <button onClick={() => setSection("request")}>Send Blood Request</button>
+                <button onClick={() => { setSection("accepted"); loadAcceptedDonors(); }}>Accepted Donors</button>
+            </div>
 
-            <button onClick={() => setSection("patient")}>
-                Patients
-            </button>
-
-            <br /><br />
-
-            <button onClick={() => setSection("request")}>
-                Send Blood Request
-            </button>
-
-            <br /><br />
-
-            <button onClick={() => {
-                setSection("accepted");
-                loadAcceptedDonors();
-            }}>
-                Accepted Donors
-            </button>
-
-            <br /><br />
+            <hr />
 
             {section === "patient" && <PatientSection user={user} />}
             {section === "request" && <RequestSection user={user} />}
             {section === "accepted" && (
-                <div>
-                    <h3>Accepted Donors</h3>
+                <div className="accepted-section">
+                    <h3>Donors Who Accepted Requests</h3>
+                    {acceptedDonors.length === 0 ? <p>No active donor matches yet.</p> : (
+                        acceptedDonors.map((d) => (
+                            <div key={d.request_id} className="request-card" style={{ border: "1px solid #e74c3c" }}>
+                                <p><strong>Donor:</strong> {d.fullname}</p>
+                                <p><strong>Blood:</strong> {d.blood_group} | <strong>Tel:</strong> {d.telephone}</p>
 
-                    {acceptedDonors.length === 0 && <p>No accepted donors yet</p>}
+                                <button onClick={async () => {
+                                    const res = await fetch("http://localhost:5001/donor-details/" + d.donor_id);
+                                    const data = await res.json();
+                                    alert(`Full Details:\nName: ${data.fullname}\nNIC: ${data.nic}\nLocation: ${data.city}, ${data.district}`);
+                                }}>View Details</button>
 
-                    {acceptedDonors.map((d, index) => (
-                        <div key={index} style={{ border: "1px solid black", margin: "10px", padding: "10px" }}>
-                            <p>Name: {d.fullname}</p>
-                            <p>Telephone: {d.telephone}</p>
-                            <p>Blood Group: {d.blood_group}</p>
-
-                            <button onClick={async () => {
-
-                                const res = await fetch("http://localhost:5000/donor-details/" + d.donor_id);
-                                const data = await res.json();
-
-                                alert(
-                                    "Full Name: " + data.fullname +
-                                    "\nNIC: " + data.nic +
-                                    "\nTelephone: " + data.telephone +
-                                    "\nDistrict: " + data.district +
-                                    "\nCity: " + data.city +
-                                    "\nRoad: " + data.road +
-                                    "\nPostal Code: " + data.postal_code
-                                );
-
-                            }}>
-                                Details
-                            </button>
-
-                            <button onClick={async () => {
-
-                                await fetch("http://localhost:5000/complete-request", {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({
-                                        request_id: d.request_id
-                                    })
-                                });
-
-                                alert("Donation Completed");
-
-                                loadAcceptedDonors();
-
-                            }}>
-                                Done
-                            </button>
-
-                        </div>
-                    ))}
+                                <button style={{ marginLeft: "10px", backgroundColor: "#27ae60" }} onClick={async () => {
+                                    await fetch("http://localhost:5001/complete-request", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ request_id: d.request_id })
+                                    });
+                                    alert("Donation process completed and archived.");
+                                    loadAcceptedDonors();
+                                }}>Mark as Done</button>
+                            </div>
+                        ))
+                    )}
                 </div>
             )}
         </div>
     );
 }
 
-export default HospitalDashboard;
-
-
-
-/* =========================
-   PATIENT SECTION
-========================= */
-
+/* --- PATIENT SECTION --- */
 function PatientSection({ user }) {
-
-    const [form, setForm] = useState({
-        fullname: "",
-        nic: "",
-        blood_group: ""
-    });
-
+    const [form, setForm] = useState({ fullname: "", nic: "", blood_group: "" });
     const [patients, setPatients] = useState([]);
 
-    const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
-        });
-    };
+    useEffect(() => { loadPatients(); }, []);
 
     const loadPatients = async () => {
-        const res = await fetch("http://localhost:5000/get-patients/" + user.id);
+        const res = await fetch("http://localhost:5001/get-patients/" + user.id);
         const data = await res.json();
-        setPatients(data);
+        setPatients(Array.isArray(data) ? data : []);
     };
 
     const handleSubmit = async () => {
-
-        await fetch("http://localhost:5000/add-patient", {
+        await fetch("http://localhost:5001/add-patient", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                hospital_user_id: user.id,
-                ...form
-            })
+            body: JSON.stringify({ hospital_user_id: user.id, ...form })
         });
-
         alert("Patient Added");
-
-        loadPatients();
-    };
-
-    const deletePatient = async (id) => {
-
-        await fetch("http://localhost:5000/delete-patient", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ patient_id: id })
-        });
-
-        alert("Patient Deleted");
-
+        setForm({ fullname: "", nic: "", blood_group: "" });
         loadPatients();
     };
 
     return (
         <div>
-            <h3>Register Patient</h3>
-
-            <input name="fullname" placeholder="Full Name" onChange={handleChange} /><br /><br />
-            <input name="nic" placeholder="NIC" onChange={handleChange} /><br /><br />
-            <input name="blood_group" placeholder="Blood Group" onChange={handleChange} /><br /><br />
-
-            <button onClick={handleSubmit}>Add Patient</button>
-
-            <br /><br />
-
-            <button onClick={loadPatients}>Show Patients</button>
-
-            <br /><br />
-
-            <h3>Patient List</h3>
-
+            <h3>Manage Patients</h3>
+            <input name="fullname" placeholder="Full Name" value={form.fullname} onChange={(e) => setForm({...form, fullname: e.target.value})} /><br />
+            <input name="nic" placeholder="NIC" value={form.nic} onChange={(e) => setForm({...form, nic: e.target.value})} /><br />
+            <input name="blood_group" placeholder="Blood Group" value={form.blood_group} onChange={(e) => setForm({...form, blood_group: e.target.value})} /><br />
+            <button onClick={handleSubmit}>Register Patient</button>
+            
+            <h4>Current Patients</h4>
             {patients.map((p) => (
-                <div key={p.id} style={{ border: "1px solid black", padding: "10px", margin: "10px" }}>
-                    <p>Name: {p.fullname}</p>
-                    <p>NIC: {p.nic}</p>
-                    <p>Blood Group: {p.blood_group}</p>
-
-                    <button onClick={() => deletePatient(p.id)}>
-                        Remove
-                    </button>
+                <div key={p.id} className="request-card">
+                    <p>{p.fullname} ({p.blood_group}) - NIC: {p.nic}</p>
                 </div>
             ))}
         </div>
     );
 }
 
-
-/* =========================
-   REQUEST SECTION
-========================= */
-
+/* --- REQUEST SECTION --- */
 function RequestSection({ user }) {
-
     const [blood_group, setBloodGroup] = useState("");
     const [district, setDistrict] = useState("");
 
     const handleRequest = async () => {
-
-        await fetch("http://localhost:5000/send-request", {
+        if(!blood_group || !district) return alert("Please fill all fields");
+        await fetch("http://localhost:5001/send-request", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                hospital_user_id: user.id,
-                blood_group,
-                district
-            })
+            body: JSON.stringify({ hospital_user_id: user.id, blood_group, district })
         });
-
-        alert("Request Sent");
+        alert("Blood Request Broadcasted to Donors!");
     };
 
     return (
         <div>
-            <h3>Send Blood Request</h3>
-
-            <input
-                placeholder="Blood Group"
-                onChange={(e) => setBloodGroup(e.target.value)}
-            />
-            <br /><br />
-
-            <input
-                placeholder="District"
-                onChange={(e) => setDistrict(e.target.value)}
-            />
-            <br /><br />
-
-            <button onClick={handleRequest}>Send</button>
+            <h3>Urgent Blood Request</h3>
+            <p>This will notify donors in the selected district.</p>
+            <input placeholder="Blood Group (e.g. O+)" onChange={(e) => setBloodGroup(e.target.value)} /><br />
+            <input placeholder="District (e.g. Colombo)" onChange={(e) => setDistrict(e.target.value)} /><br />
+            <button onClick={handleRequest}>Broadcast Request</button>
         </div>
     );
 }
+
+export default HospitalDashboard;
