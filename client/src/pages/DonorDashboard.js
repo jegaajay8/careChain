@@ -12,7 +12,7 @@ function DonorDashboard({ user, logout }) {
 
     const closeRequest = async (request_id) => {
 
-        await fetch("http://localhost:5000/close-request", {
+        await fetch("http://localhost:5001/close-request", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ request_id })
@@ -23,19 +23,19 @@ function DonorDashboard({ user, logout }) {
     };
 
     const loadProfile = async () => {
-        const res = await fetch("http://localhost:5000/donor-profile/" + user.id);
+        const res = await fetch("http://localhost:5001/donor-profile/" + user.id);
         const data = await res.json();
         setProfile(data);
     };
 
     const loadRequests = async () => {
-        const res = await fetch("http://localhost:5000/get-requests/" + user.id);
+        const res = await fetch("http://localhost:5001/get-requests/" + user.id);
         const data = await res.json();
         setRequests(data);
     };
 
     const acceptRequest = async (request_id) => {
-        await fetch("http://localhost:5000/accept-request", {
+        await fetch("http://localhost:5001/accept-request", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -56,7 +56,7 @@ function DonorDashboard({ user, logout }) {
 
                 if (!confirmDelete) return;
 
-                await fetch("http://localhost:5000/delete-donor-account", {
+                await fetch("http://localhost:5001/delete-donor-account", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ user_id: user.id })
@@ -149,7 +149,7 @@ function DonorDashboard({ user, logout }) {
                     <br /><br />
 
                     <button onClick={async () => {
-                        await fetch("http://localhost:5000/update-donor", {
+                        await fetch("http://localhost:5001/update-donor", {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({
