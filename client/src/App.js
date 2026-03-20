@@ -7,31 +7,44 @@ import DonorDashboard from "./pages/DonorDashboard";
 import HospitalDashboard from "./pages/HospitalDashboard";
 
 function App() {
-
+  // 1. Define all States first
   const [page, setPage] = useState("login");
-
-  const logout = () => {
-  setUser(null);
-  setPage("login");
-};
-
   const [user, setUser] = useState(null);
 
-  if (page === "login")
-    return <Login setPage={setPage} setUser={setUser} />;
+  // 2. Define Shared Functions
+  const logout = () => {
+    setUser(null);
+    setPage("login");
+  };
 
-  if (page === "registerDonor")
-    return <RegisterDonor setPage={setPage} />;
+  // 3. Use a Switch-Case for cleaner navigation
+  const renderPage = () => {
+    switch (page) {
+      case "login":
+        return <Login setPage={setPage} setUser={setUser} />;
+      
+      case "registerDonor":
+        return <RegisterDonor setPage={setPage} />;
+      
+      case "registerHospital":
+        return <RegisterHospital setPage={setPage} />;
+      
+      case "donorDashboard":
+        return <DonorDashboard user={user} logout={logout} setPage={setPage} />;
+      
+      case "hospitalDashboard":
+        return <HospitalDashboard user={user} logout={logout} setPage={setPage} />;
+      
+      default:
+        return <Login setPage={setPage} setUser={setUser} />;
+    }
+  };
 
-  if (page === "registerHospital")
-    return <RegisterHospital setPage={setPage} />;
-
- if (page === "donorDashboard")
-    return <DonorDashboard user={user} logout={logout} />;
-
-if (page === "hospitalDashboard")
-    return <HospitalDashboard user={user} logout={logout} />;
-
+  return (
+    <div className="App">
+      {renderPage()}
+    </div>
+  );
 }
 
 export default App;
