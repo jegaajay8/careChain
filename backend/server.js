@@ -81,10 +81,6 @@ app.post("/accept-request", (req, res) => {
     });
 });
 
-// ==========================
-// 3. HOSPITAL ROUTES
-// ==========================
-
 // Register Hospital
 app.post("/register-hospital", (req, res) => {
     const { username, password, hospital_name, hospital_id, district, city, road, postal_code } = req.body;
@@ -99,6 +95,7 @@ app.post("/register-hospital", (req, res) => {
         });
     });
 });
+
 
 // Add Patient (linked to hospital table PK)
 app.post("/add-patient", (req, res) => {
