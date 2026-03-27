@@ -7,9 +7,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ==========================
+
 // 1. AUTHENTICATION & LOGIN
-// ==========================
+
 app.post("/login", (req, res) => {
     const { username, password } = req.body;
     const sql = "SELECT id, username, role FROM users WHERE username=? AND password=?";
