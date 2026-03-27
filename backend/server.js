@@ -23,9 +23,9 @@ app.post("/login", (req, res) => {
     });
 });
 
-// ==========================
+
 // 2. DONOR ROUTES
-// ==========================
+
 
 // Register Donor
 app.post("/register-donor", (req, res) => {
@@ -163,3 +163,10 @@ app.listen(PORT, () => {
     console.log(`✅ CareChain Server running on Port ${PORT}`);
     console.log(`🔗 Database connected and ready.`);
 });
+
+
+/*app.listen(PORT, () => {
+    chain.push(createGenesisBlock());
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+*/
