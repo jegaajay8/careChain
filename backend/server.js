@@ -1,18 +1,25 @@
-const express = require("express");
-const cors = require("cors");
-const db = require("./db"); // Ensure db.js uses your 'admin123' password
+//importing modules
+const express = require("express");   // frame work to create server and API
+const cors = require("cors");     //allows frontend to access backend 
+const db = require("./db");      // my sql connection file
 
+// Ensure db.js uses your 'admin123' password
+
+// create app
 const app = express();
 
+// (frontend <-> backend)
 app.use(cors());
 app.use(express.json());
 
 
 // 1. AUTHENTICATION & LOGIN
 
+// login API
 app.post("/login", (req, res) => {
     const { username, password } = req.body;
     const sql = "SELECT id, username, role FROM users WHERE username=? AND password=?";
+    //SQL query to check user
     db.query(sql, [username, password], (err, result) => {
         if (err) return res.status(500).json({ message: "Server error" });
         if (result.length > 0) {
