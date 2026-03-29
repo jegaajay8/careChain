@@ -2,8 +2,10 @@
 const express = require("express");   // frame work to create server and API
 const cors = require("cors");     //allows frontend to access backend 
 const db = require("./db");      // my sql connection file
+const bcrypt = require("bcrypt");
+require("dotenv").config();
 
-// Ensure db.js uses your 'admin123' password
+// Ensure db.js uses your password
 
 // create app
 const app = express();
@@ -16,16 +18,29 @@ app.use(express.json());
 // 1. AUTHENTICATION & LOGIN
 
 // login API
-app.post("/login", (req, res) => {
+app.post("/login", async (req, res) => {
     const { username, password } = req.body;
-    const sql = "SELECT id, username, role FROM users WHERE username=? AND password=?";
+    if (!username || !password) {
+        return res.status(400).json({ message: "Username and password required" });
+    }
+    
+    const sql = "SELECT * FROM users WHERE username=?";
+    
     //SQL query to check user
     db.query(sql, [username, password], (err, result) => {
         if (err) return res.status(500).json({ message: "Server error" });
         if (result.length > 0) {
-            res.json(result[0]); // Returns {id, username, role}
+            const user = result[0];
+
+            const isMatch = await bcrypt.compare(password, user.password);
+
+            if (isMatch) {
+                res.json({ id: user.id, username: user.username, role: user.role });
+            } else {
+                res.status(401).json({ message: "Invalid credentials" });
+            }
         } else {
-            res.status(401).json({ message: "Invalid username or password" });
+            res.status(401).json({ message: "Invalid credentials" });
         }
     });
 });
@@ -35,11 +50,16 @@ app.post("/login", (req, res) => {
 
 
 // Register Donor
-app.post("/register-donor", (req, res) => {
+app.post("/register-donor", async (req, res) => {
     const { username, password, fullname, nic, telephone, blood_group, district, city, road, postal_code } = req.body;
+    
+    if (!username || !password || !fullname) {
+        return res.status(400).json({ message: "Missing required fields" });
+    }
     const sql1 = "INSERT INTO users (username, password, role) VALUES (?, ?, 'donor')";
 
-    db.query(sql1, [username, password], (err, result) => {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    db.query(sql1, [username, hashedPassword], (err, result) => {
         if (err) return res.status(500).json({ message: "Username already exists." });
         const user_id = result.insertId;
         const sql2 = "INSERT INTO donors (user_id, fullname, nic, telephone, blood_group, district, city, road, postal_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -81,7 +101,10 @@ app.post("/accept-request", (req, res) => {
     db.query("SELECT id FROM donors WHERE user_id = ?", [donor_user_id], (err, donor) => {
         if (err || donor.length === 0) return res.status(404).json({ message: "Donor not found" });
         const sql = "UPDATE requests SET status='closed', accepted_donor_id=? WHERE id=? AND status='open'";
-        db.query(sql, [donor[0].id, request_id], (err2) => {
+        db.query(sql, [donor[0].id, request_id], (err2, result) => {
+            if (result.affectedRows === 0) {
+                return res.status(400).json({ message: "Request already taken" });
+            }
             if (err2) return res.status(500).json({ message: "Error updating request" });
             res.json({ message: "Request Accepted!" });
         });
@@ -172,8 +195,3 @@ app.listen(PORT, () => {
 });
 
 
-/*app.listen(PORT, () => {
-    chain.push(createGenesisBlock());
-    console.log(`Server running on http://localhost:${PORT}`);
-});
-*/
