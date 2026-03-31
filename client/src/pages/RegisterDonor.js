@@ -14,6 +14,8 @@ function RegisterDonor({ setPage }) {
         postal_code: ""
     });
 
+    const [showPassword, setShowPassword] = useState(false);
+
     const handleChange = (e) => {
         setForm({
             ...form,
@@ -47,21 +49,57 @@ function RegisterDonor({ setPage }) {
     };
 
     return (
-        <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <div className="form-container">
             <h2>Donor Registration</h2>
 
-            {/* Added 'value' to inputs to make them controlled components */}
-            <input name="username" placeholder="Username" value={form.username} onChange={handleChange} /><br /><br />
-            <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} /><br /><br />
-            <input name="fullname" placeholder="Full Name" value={form.fullname} onChange={handleChange} /><br /><br />
-            <input name="nic" placeholder="NIC Number" value={form.nic} onChange={handleChange} /><br /><br />
-            <input name="telephone" placeholder="Telephone" value={form.telephone} onChange={handleChange} /><br /><br />
-            <input name="blood_group" placeholder="Blood Group" value={form.blood_group} onChange={handleChange} /><br /><br />
-            <input name="district" placeholder="District" value={form.district} onChange={handleChange} /><br /><br />
-            <input name="city" placeholder="City" value={form.city} onChange={handleChange} /><br /><br />
-            <input name="road" placeholder="Road" value={form.road} onChange={handleChange} /><br /><br />
-            <input name="postal_code" placeholder="Postal Code" value={form.postal_code} onChange={handleChange} /><br /><br />
+            <div className="form-group">
+                <input name="username" placeholder="Username" value={form.username} onChange={handleChange} />
+            </div>
 
+            <div className="form-group password-group">
+                <div className="password-wrapper">
+                    <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        placeholder="Password"
+                        value={form.password}
+                        onChange={handleChange}
+                    />
+
+                    <span
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="eye-icon"
+                    >
+                        {showPassword ? "🙈" : "👁️"}
+                    </span>
+                </div>
+            </div>
+            
+            <div className="form-group">
+            <input name="fullname" placeholder="Full Name" value={form.fullname} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+            <input name="nic" placeholder="NIC Number" value={form.nic} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+            <input name="telephone" placeholder="Telephone" value={form.telephone} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+            <input name="blood_group" placeholder="Blood Group" value={form.blood_group} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+            <input name="district" placeholder="District" value={form.district} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+            <input name="city" placeholder="City" value={form.city} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+            <input name="road" placeholder="Road" value={form.road} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+            <input name="postal_code" placeholder="Postal Code" value={form.postal_code} onChange={handleChange} />
+            </div>
+            
             <button onClick={handleSubmit} style={{ padding: "10px 20px", cursor: "pointer" }}>Submit</button>
             <br /><br />
             <button onClick={() => setPage("login")} style={{ background: "none", border: "none", color: "blue", cursor: "pointer" }}>

@@ -22,7 +22,6 @@ root.render(
     <App />
     {/* This is the top-level component that renders everything inside your app */}
 
-add some commments don't change the code
-
+    {/* add some comments don't change the code */}
   </React.StrictMode>
 );

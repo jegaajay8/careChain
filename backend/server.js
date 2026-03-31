@@ -27,7 +27,7 @@ app.post("/login", async (req, res) => {
     const sql = "SELECT * FROM users WHERE username=?";
     
     //SQL query to check user
-    db.query(sql, [username, password], (err, result) => {
+    db.query(sql, [username], async (err, result) => {
         if (err) return res.status(500).json({ message: "Server error" });
         if (result.length > 0) {
             const user = result[0];
@@ -51,6 +51,7 @@ app.post("/login", async (req, res) => {
 
 // Register Donor
 app.post("/register-donor", async (req, res) => {
+    console.log("REGISTER BODY:", req.body); 
     const { username, password, fullname, nic, telephone, blood_group, district, city, road, postal_code } = req.body;
     
     if (!username || !password || !fullname) {
@@ -60,7 +61,10 @@ app.post("/register-donor", async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     db.query(sql1, [username, hashedPassword], (err, result) => {
-        if (err) return res.status(500).json({ message: "Username already exists." });
+         if (err) {
+            console.log("❌ DB ERROR:", err);
+            return res.status(500).json({ message: err.sqlMessage || err.message });
+        }
         const user_id = result.insertId;
         const sql2 = "INSERT INTO donors (user_id, fullname, nic, telephone, blood_group, district, city, road, postal_code) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         db.query(sql2, [user_id, fullname, nic, telephone, blood_group, district, city, road, postal_code], (err2) => {
@@ -112,11 +116,17 @@ app.post("/accept-request", (req, res) => {
 });
 
 // Register Hospital
-app.post("/register-hospital", (req, res) => {
+app.post("/register-hospital", async (req, res) => {
+    console.log("REGISTER BODY:", req.body); 
     const { username, password, hospital_name, hospital_id, district, city, road, postal_code } = req.body;
     const sql1 = "INSERT INTO users (username, password, role) VALUES (?, ?, 'hospital')";
-    db.query(sql1, [username, password], (err, result) => {
-        if (err) return res.status(500).json({ message: "Username already exists." });
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    db.query(sql1, [username, hashedPassword], (err, result) => {
+        if (err) {
+            console.log("❌ DB ERROR:", err);
+            return res.status(500).json({ message: err.sqlMessage || err.message });
+        }
         const user_id = result.insertId;
         const sql2 = "INSERT INTO hospitals (user_id, hospital_name, hospital_id, district, city, road, postal_code) VALUES (?, ?, ?, ?, ?, ?, ?)";
         db.query(sql2, [user_id, hospital_name, hospital_id, district, city, road, postal_code], (err2) => {
