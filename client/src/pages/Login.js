@@ -4,6 +4,7 @@ function Login({ setPage, setUser }) {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleLogin = async () => {
 
@@ -29,31 +30,40 @@ function Login({ setPage, setUser }) {
     };
 
     return (
-        <div>
+        <div className="form-container">
             <h2>careChain Login</h2>
 
-            <input
-                placeholder="Username"
-                onChange={(e) => setUsername(e.target.value)}
-            />
-            <br /><br />
-
-            <input
-                type="password"
-                placeholder="Password"
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <br /><br />
+            <div className="form-group">
+                <input
+                    placeholder="Username"
+                    onChange={(e) => setUsername(e.target.value)}
+                />
+            </div>
+            <div className="password-wrapper">
+                <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    placeholder="Password"
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+                <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="eye-icon"
+                    >
+                    {showPassword ? "🙈" : "👁️"}
+                </span>
+            </div><br/>
+            
 
             <button onClick={handleLogin}>Login</button>
 
-            <br /><br />
+            <br/>
 
             <button onClick={() => setPage("registerDonor")}>
                 Register as Donor
             </button>
 
-            <br /><br />
+            <br/>
 
             <button onClick={() => setPage("registerHospital")}>
                 Register as Hospital

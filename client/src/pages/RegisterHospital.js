@@ -12,6 +12,8 @@ function RegisterHospital({ setPage }) {
         postal_code: ""
     });
 
+    const [showPassword, setShowPassword] = useState(false);
+
     const handleChange = (e) => {
         setForm({
             ...form,
@@ -44,18 +46,39 @@ function RegisterHospital({ setPage }) {
     };
 
     return (
-        <div className="App" style={{ marginTop: "20px" }}>
+        <div className="form-container">
             <h2>Hospital Registration</h2>
 
-            {/* Added 'value' to ensure these are controlled components */}
-            <input name="username" placeholder="Username" value={form.username} onChange={handleChange} /><br />
-            <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} /><br />
-            <input name="hospital_name" placeholder="Hospital Name" value={form.hospital_name} onChange={handleChange} /><br />
-            <input name="hospital_id" placeholder="Official Hospital ID" value={form.hospital_id} onChange={handleChange} /><br />
-            <input name="district" placeholder="District" value={form.district} onChange={handleChange} /><br />
-            <input name="city" placeholder="City" value={form.city} onChange={handleChange} /><br />
-            <input name="road" placeholder="Road" value={form.road} onChange={handleChange} /><br />
-            <input name="postal_code" placeholder="Postal Code" value={form.postal_code} onChange={handleChange} /><br /><br />
+            <div className="form-group">
+                <input name="username" placeholder="Username" value={form.username} onChange={handleChange} />
+            </div>
+            <div className="password-wrapper">
+                <input type={showPassword ? "text" : "password"} name="password" placeholder="Password" value={form.password} onChange={handleChange} />
+                <span
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="eye-icon"
+                    >
+                    {showPassword ? "🙈" : "👁️"}
+                </span>
+            </div><br/>
+            <div className="form-group">
+                <input name="hospital_name" placeholder="Hospital Name" value={form.hospital_name} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+                <input name="hospital_id" placeholder="Official Hospital ID" value={form.hospital_id} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+                <input name="district" placeholder="District" value={form.district} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+                <input name="city" placeholder="City" value={form.city} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+                <input name="road" placeholder="Road" value={form.road} onChange={handleChange} />
+            </div>
+            <div className="form-group">
+                <input name="postal_code" placeholder="Postal Code" value={form.postal_code} onChange={handleChange} />
+            </div>
 
             <button onClick={handleSubmit}>Register Hospital</button>
             <br />

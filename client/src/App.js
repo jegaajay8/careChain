@@ -41,8 +41,20 @@ function App() {
   };
 
   return (
-    <div className="App">
+      <div className="App">
+        <header style={{ padding: "20px 0", textAlign: "center" }}>
+          <h1 style={{ color: "#c0392b", margin: 0 }}>CareChain</h1>
+          <small style={{ color: "#7f8c8d", fontWeight: "bold" }}>Sri Lanka Blood Management System</small>
+      </header>
+
       {renderPage()}
+
+      <footer style={{ marginTop: "40px", fontSize: "12px", color: "#95a5a6", textAlign: "center", paddingBottom: "30px" }}>
+        <strong>CareChain Sri Lanka</strong><br />
+        Bridging Donors and Hospitals • 2026<br />
+        <span style={{ color: "#e74c3c" }}>University of Moratuwa CSE Project</span>
+      </footer>
+
     </div>
   );
 }
