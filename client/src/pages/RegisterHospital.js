@@ -13,6 +13,9 @@ function RegisterHospital({ setPage }) {
     });
 
     const [showPassword, setShowPassword] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
     const handleChange = (e) => {
         setForm({
@@ -20,8 +23,31 @@ function RegisterHospital({ setPage }) {
             [e.target.name]: e.target.value
         });
     };
+    const validateForm = () => {
+        if (!form.username || !form.password || !form.hospital_name) {
+            setError("Please fill required fields");
+            return false;
+        }
+
+        if (form.password !== confirmPassword) {
+            setError("Passwords do not match");
+            return false;
+        }
+
+        if (form.password.length < 6) {
+            setError("Password must be at least 6 characters");
+            return false;
+        }
+
+        return true;
+    };
+
 
     const handleSubmit = async () => {
+        if (!validateForm()) return;
+
+        setLoading(true);
+        setError("");
         try {
             // Using the new Port 5001
             const res = await fetch("http://localhost:5001/register-hospital", {
@@ -41,7 +67,9 @@ function RegisterHospital({ setPage }) {
 
         } catch (err) {
             console.error("Hospital Registration Error:", err);
-            alert("Could not connect to the server. Please ensure the backend is running on Port 5001.");
+            setError("Server connection failed");
+        }finally {
+            setLoading(false);
         }
     };
 
@@ -49,11 +77,26 @@ function RegisterHospital({ setPage }) {
         <div className="form-container">
             <h2>Hospital Registration</h2>
 
+            {error && <p style={{ color: "red" }}>{error}</p>}
+
             <div className="form-group">
                 <input name="username" placeholder="Username" value={form.username} onChange={handleChange} />
             </div>
             <div className="password-wrapper">
                 <input type={showPassword ? "text" : "password"} name="password" placeholder="Password" value={form.password} onChange={handleChange} />
+
+                {form.password && (
+                    <small style={{
+                        color:
+                            form.password.length < 6
+                                ? "red"
+                                : form.password.length < 10
+                                ? "orange"
+                                : "green"
+                    }}>
+                        Strength: {form.password.length < 6 ? "Weak" : form.password.length < 10 ? "Medium" : "Strong"}
+                    </small>
+                )}
                 <span
                     onClick={() => setShowPassword(!showPassword)}
                     className="eye-icon"
@@ -61,6 +104,16 @@ function RegisterHospital({ setPage }) {
                     {showPassword ? "🙈" : "👁️"}
                 </span>
             </div><br/>
+            
+            <div className="form-group">
+                <input
+                    type="password"
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+            </div>
+
             <div className="form-group">
                 <input name="hospital_name" placeholder="Hospital Name" value={form.hospital_name} onChange={handleChange} />
             </div>
@@ -80,7 +133,9 @@ function RegisterHospital({ setPage }) {
                 <input name="postal_code" placeholder="Postal Code" value={form.postal_code} onChange={handleChange} />
             </div>
 
-            <button onClick={handleSubmit}>Register Hospital</button>
+            <button onClick={handleSubmit} disabled={loading}>
+                {loading ? "Registering..." : "Register Hospital"}
+            </button>
             <br />
             <button className="back-btn" onClick={() => setPage("login")}>
                 Back to Login
