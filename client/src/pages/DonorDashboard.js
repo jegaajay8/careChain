@@ -7,6 +7,11 @@ function DonorDashboard({ user, logout }) {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [filterDistrict, setFilterDistrict] = useState("");
+  const [history, setHistory] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -41,6 +46,43 @@ function DonorDashboard({ user, logout }) {
       setLoading(false);
     }
   };
+
+  const loadHistory = async () => {
+    try {
+      const res = await fetch(`http://localhost:5001/donation-history/${user.id}`);
+      const data = await res.json();
+      setHistory(data);
+    } catch (err) {
+      alert("Failed to load history");
+    }
+  };
+
+
+  const filteredRequests = requests.filter(r =>
+    r.hospital_name.toLowerCase().includes(search.toLowerCase()) &&
+    (filterDistrict === "" || r.district === filterDistrict)
+  );
+
+  const loadNotifications = async () => {
+    try {
+      const res = await fetch(`http://localhost:5001/donor-notifications/${user.id}`);
+      const data = await res.json();
+      setNotifications(data);
+    } catch (err) {
+      alert("Failed to load notifications");
+    }
+  };
+
+  const exportData = () => {
+    const data = JSON.stringify(acceptedRequests, null, 2);
+    const blob = new Blob([data], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "donation-report.txt";
+    a.click();
+  };
+
 
   const acceptRequest = async (request_id) => {
     try {
@@ -125,6 +167,10 @@ function DonorDashboard({ user, logout }) {
       <p>Welcome, <strong>{user.username}</strong></p>
 
       <div style={{ marginBottom: "20px" }}>
+        <button onClick={() => setSearch("")}>Reset Filters</button>
+        <button onClick={() => { setSection("history"); loadHistory(); }} style={{ marginLeft: "10px" }}>Donation History</button>
+        <button onClick={() => { setSection("notifications"); loadNotifications(); }} style={{ marginLeft: "10px" }}>Notifications ({notifications.length})</button>
+        <button onClick={exportData} style={{ marginLeft: "10px" }}>Export Report</button>
         <button onClick={() => setSection("profile")}>Profile</button>
         <button onClick={() => { setSection("requests"); loadRequests(); }} style={{ marginLeft: "10px" }}>Blood Requests</button>
         <button onClick={() => setSection("accepted")} style={{ marginLeft: "10px" }}>Accepted Donations</button>
@@ -157,8 +203,19 @@ function DonorDashboard({ user, logout }) {
       {section === "requests" && (
         <div>
           <h3>Open Blood Requests</h3>
+          <input
+            placeholder="Search hospital..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <input
+            placeholder="Filter district..."
+            value={filterDistrict}
+            onChange={(e) => setFilterDistrict(e.target.value)}
+            style={{ marginLeft: "10px" }}
+          />
           {requests.length === 0 ? <p>No open requests</p> :
-            requests.map(r => (
+            filteredRequests.map(r => (
               <div key={r.id} style={{ border: "1px solid black", padding: "10px", margin: "10px 0" }}>
                 <p>Hospital: {r.hospital_name}</p>
                 <p>District: {r.district}</p>
@@ -192,6 +249,38 @@ function DonorDashboard({ user, logout }) {
           }
         </div>
       )}
+
+      {section === "history" && (
+        <div>
+          <h3>Donation History</h3>
+          {history.length === 0 ? (<p>No history found</p>) : (
+            history.map(h => (
+              <div key={h.id} style={{ border: "1px solid blue", margin: "10px", padding: "10px" }}>
+                <p>Hospital: {h.hospital_name}</p>
+                <p>Date: {h.date}</p>
+                <p>Blood Group: {h.blood_group}</p>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+
+      {section === "notifications" && (
+        <div>
+          <h3>Notifications</h3>
+            {notifications.length === 0 ? (
+                <p>No notifications</p>
+                ) : (
+              notifications.map(n => (
+              <div key={n.id} style={{ background: "#fff3cd", padding: "10px", margin: "10px 0" }}>
+                <p>{n.message}</p>
+                <small>{n.created_at}</small>
+              </div>
+                ))
+            )}
+        </div>
+      )}
+      
     </div>
   );
 }

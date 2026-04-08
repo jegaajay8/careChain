@@ -5,6 +5,10 @@ function HospitalDashboard({ user, logout }) {
   const [acceptedDonors, setAcceptedDonors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [patientSearch, setPatientSearch] = useState("");
+  const [bloodFilter, setBloodFilter] = useState("");
+  const [history, setHistory] = useState([]);
+  const [notifications, setNotifications] = useState([]);
 
   // ---------------- Load Accepted Donors ----------------
   const loadAcceptedDonors = useCallback(async () => {
@@ -21,6 +25,28 @@ function HospitalDashboard({ user, logout }) {
     }
    }, [user.id]);
 
+   // ----------- EXTRA FUNCTIONS -----------
+
+  const loadHistory = async () => {
+    try {
+      const res = await fetch(`http://localhost:5001/hospital-history/${user.id}`);
+      const data = await res.json();
+      setHistory(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const loadNotifications = async () => {
+    try {
+      const res = await fetch(`http://localhost:5001/hospital-notifications/${user.id}`);
+      const data = await res.json();
+      setNotifications(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   // ----------------- RENDER -----------------
   return (
     <div style={{ maxWidth: "900px", margin: "auto", padding: "20px" }}>
@@ -33,6 +59,14 @@ function HospitalDashboard({ user, logout }) {
 
       {/* Tabs */}
       <div style={{ marginBottom: "20px" }}>
+        <button onClick={() => { setSection("notifications"); loadNotifications(); }}>
+          Notifications ({notifications.length})
+        </button>
+
+        <button onClick={() => { setSection("history"); loadHistory(); }} style={{ marginLeft: "10px" }}>
+          Request History
+        </button>
+
         <button
           onClick={() => setSection("patients")}
           style={section === "patients" ? activeTabStyle : tabStyle}
@@ -59,9 +93,45 @@ function HospitalDashboard({ user, logout }) {
       {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
       {/* Sections */}
-      {section === "patients" && <PatientSection user={user} />}
+      {section === "patients" && (
+        <PatientSection
+          user={user}
+          patientSearch={patientSearch}
+          setPatientSearch={setPatientSearch}
+          bloodFilter={bloodFilter}
+          setBloodFilter={setBloodFilter}
+        />
+      )}
       {section === "requests" && <RequestSection user={user} />}
       {section === "accepted" && <AcceptedDonorsSection donors={acceptedDonors} reload={loadAcceptedDonors} />}
+      {section === "history" && (
+        <div>
+          <h3>Hospital Activity History</h3>
+            {history.length === 0 ? <p>No history</p> :
+            history.map(h => (
+              <div key={h.id} style={{ border: "1px solid blue", margin: "10px", padding: "10px" }}>
+                <p>Patient: {h.patient_name}</p>
+                <p>Action: {h.action}</p>
+                <p>Date: {h.date}</p>
+              </div>
+            ))
+            }
+        </div>
+      )}
+
+      {section === "notifications" && (
+        <div>
+        <h3>Notifications</h3>
+          {notifications.length === 0 ? <p>No notifications</p> :
+            notifications.map(n => (
+            <div key={n.id} style={{ background: "#fff3cd", padding: "10px", margin: "10px 0" }}>
+              <p>{n.message}</p>
+              <small>{n.created_at}</small>
+            </div>
+            ))
+          }
+        </div>
+      )}
     </div>
   );
 }
@@ -83,7 +153,7 @@ const activeTabStyle = {
 };
 
 // ---------------- PATIENT SECTION ----------------
-function PatientSection({ user }) {
+function PatientSection({ user, patientSearch, setPatientSearch, bloodFilter, setBloodFilter }){
   const [form, setForm] = useState({ fullname: "", nic: "", blood_group: "" });
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -126,6 +196,24 @@ function PatientSection({ user }) {
   return (
     <div>
       <h3>Manage Patients</h3>
+      <input
+        placeholder="Search patient..."
+        value={patientSearch}
+        onChange={(e) => setPatientSearch(e.target.value)}
+      />
+
+      <select
+        value={bloodFilter}
+        onChange={(e) => setBloodFilter(e.target.value)}
+        style={{ marginLeft: "10px" }}
+      >
+        <option value="">All Blood Groups</option>
+        <option value="A+">A+</option>
+        <option value="B+">B+</option>
+        <option value="O+">O+</option>
+      
+      </select>
+
       <input placeholder="Full Name" value={form.fullname} onChange={e => setForm({ ...form, fullname: e.target.value })} /><br />
       <input placeholder="NIC" value={form.nic} onChange={e => setForm({ ...form, nic: e.target.value })} /><br />
       <input placeholder="Blood Group" value={form.blood_group} onChange={e => setForm({ ...form, blood_group: e.target.value })} /><br />
@@ -133,7 +221,12 @@ function PatientSection({ user }) {
 
       <h4>Current Patients</h4>
       {loading ? <p>Loading...</p> :
-        patients.map(p => (
+        patients
+          .filter(p =>
+            p.fullname.toLowerCase().includes(patientSearch.toLowerCase()) &&
+            (bloodFilter === "" || p.blood_group === bloodFilter)
+          )
+          .map(p => (
           <div key={p.id} style={{ border: "1px solid #ccc", padding: "10px", margin: "5px 0" }}>
             {p.fullname} ({p.blood_group}) - NIC: {p.nic}
           </div>
