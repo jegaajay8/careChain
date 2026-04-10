@@ -188,7 +188,7 @@ app.get("/accepted-donors/:hospital_user_id", (req, res) => {
     });
 });
 
-// Archive/Complete Request
+  // Archive/Complete Request
 app.post("/complete-request", (req, res) => {
     const { request_id } = req.body;
     db.query("UPDATE requests SET status='completed' WHERE id=?", [request_id], (err) => {
@@ -198,10 +198,10 @@ app.post("/complete-request", (req, res) => {
 });
 
 // --- SERVER START ---
-const PORT = 5001;
-app.listen(PORT, () => {
-    console.log(`✅ CareChain Server running on Port ${PORT}`);
-    console.log(`🔗 Database connected and ready.`);
+const PORT=5001;
+app.listen( PORT, () => {
+    console.log(`✅ CareChain Server running on Port $ {PORT} `);
+    console.log(`🔗 Database connected and ready. `);
 });
 
 
