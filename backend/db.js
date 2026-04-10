@@ -1,21 +1,25 @@
 require("dotenv").config();
 const mysql = require("mysql2");
 
-//Create a env file and get connected with the Database
-
-const db = mysql.createConnection({
+// Using a Pool is better for handling multiple donor/hospital requests at once
+const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
 });
 
-db.connect((err) => {
+// Quick check to see if the pool can reach the database
+db.getConnection((err, connection) => {
     if (err) {
-        console.log("Database error:", err);
+        console.error("❌ Database connection failed:", err.message);
     } else {
-        console.log("Database connected");
+        console.log("✅ Database connected via Connection Pool");
+        connection.release(); // Important: release the connection back to the pool
     }
 });
 
-module.exports = db;
+module.exports = db.promise(); // Using .promise() allows you to use async/await later
