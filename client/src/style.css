@@ -67,18 +67,18 @@ button:hover {
     margin-top: 15px;
 }
 
-.back-btn:hover {
-    background-color: transparent;
-    color: #c0392b;
-    text-decoration: underline;
-}
-
 
 .form-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     margin-top: 20px;
+}
+
+.back-btn:hover {
+    background-color: transparent;
+    color: #c0392b;
+    text-decoration: underline;
 }
 
 .form-group {
