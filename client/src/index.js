@@ -1,27 +1,38 @@
-import React from "react"; 
-// Bringing in React so JSX can work properly
+import React from "react";
+// React library import for building UI components
 
-import ReactDOM from "react-dom/client"; 
-// Used to connect React with the actual DOM in the browser
+import ReactDOM from "react-dom/client";
+// ReactDOM is responsible for rendering React components into the webpage
 
-import App from "./App"; 
-// Main component where your whole app starts
+import App from "./App";
+// Importing the main App component
 
-import "./style.css"; 
-// Global styling file applied across the app
+import "./style.css";
+// Importing the main stylesheet for global styles
 
-// Initializing root using React 18 method
-const root = ReactDOM.createRoot(document.getElementById("root"));
+// Creating the root container using React 18 syntax
+const rootElement = ReactDOM.createRoot(
+  document.getElementById("root")
+);
 
-// Mounting the React app into the HTML element with id="root"
-root.render(
+// Rendering the application to the browser
+rootElement.render(
+
   <React.StrictMode>
-    {/* This wrapper helps detect issues and bad practices during development.
-        It runs extra checks but has no effect in production */}
+    {/*
+      React.StrictMode is used only during development.
+      It helps identify unsafe lifecycle methods,
+      deprecated features, and other potential issues.
+    */}
 
     <App />
-    {/* This is the top-level component that renders everything inside your app */}
+    
+    {/*
+      App component acts as the starting point
+      of the entire CareChain application.
+    */}
 
-    {/* add some comments don't change the code */}
+    {/* Additional comments can be added here if needed */}
+    
   </React.StrictMode>
 );
