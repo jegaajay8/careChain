@@ -1,49 +1,107 @@
 <!DOCTYPE html>
+
+<!-- 
+    Main HTML document for careChain
+    Emergency Blood and Organ Donation Management System
+-->
+
 <html lang="en">
 
 <head>
 
-    <!-- Character encoding for proper text display -->
+    <!-- ========================================= -->
+    <!-- Basic Page Configuration -->
+    <!-- ========================================= -->
+
+    <!-- Defines character encoding -->
     <meta charset="UTF-8">
 
-    <!-- Makes the website responsive on all devices -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <!-- Short description used in search engines -->
+    <!-- Ensures proper responsive behavior -->
     <meta 
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <!-- ========================================= -->
+    <!-- SEO and Browser Information -->
+    <!-- ========================================= -->
+
+    <!-- Website description for search engines -->
+    <meta
         name="description"
         content="careChain - Emergency Blood and Organ Donation Management System"
     >
 
-    <!-- Browser theme color for mobile devices -->
-    <meta name="theme-color" content="#e63946">
+    <!-- Theme color for supported mobile browsers -->
+    <meta
+        name="theme-color"
+        content="#e63946"
+    >
 
-    <!-- Enables web app mode on supported mobile browsers -->
-    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Enables standalone app-like experience -->
+    <meta
+        name="mobile-web-app-capable"
+        content="yes"
+    >
 
-    <!-- Website favicon -->
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <!-- ========================================= -->
+    <!-- Website Icons -->
+    <!-- ========================================= -->
 
-    <!-- Apple device app icon -->
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png">
+    <!-- Default browser favicon -->
+    <link
+        rel="icon"
+        href="%PUBLIC_URL%/favicon.ico"
+    >
 
-    <!-- Progressive Web App manifest file -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
+    <!-- Apple touch icon for iOS devices -->
+    <link
+        rel="apple-touch-icon"
+        href="%PUBLIC_URL%/logo192.png"
+    >
 
-    <!-- Title shown in browser tab -->
-    <title>careChain | Emergency Donation Platform</title>
+    <!-- ========================================= -->
+    <!-- Progressive Web App Settings -->
+    <!-- ========================================= -->
+
+    <!-- Web manifest configuration -->
+    <link
+        rel="manifest"
+        href="%PUBLIC_URL%/manifest.json"
+    >
+
+    <!-- ========================================= -->
+    <!-- Browser Tab Title -->
+    <!-- ========================================= -->
+
+    <title>
+        careChain - Donation Emergency System
+    </title>
 
 </head>
 
 <body>
 
-    <!-- Displayed if JavaScript is disabled -->
+    <!-- ========================================= -->
+    <!-- JavaScript Disabled Warning -->
+    <!-- ========================================= -->
+
     <noscript>
-        JavaScript must be enabled to run careChain.
+        You need to enable JavaScript to use careChain properly.
     </noscript>
 
-    <!-- Root element where React injects the application -->
-    <main id="root"></main>
+    <!-- ========================================= -->
+    <!-- React Application Mounting Point -->
+    <!-- ========================================= -->
+
+    <div id="root">
+
+        <!-- 
+            React application will be rendered here.
+            All components are injected inside this div.
+        -->
+
+    </div>
 
 </body>
 
