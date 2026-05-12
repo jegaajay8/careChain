@@ -1,61 +1,25 @@
 {
   "short_name": "careChain",
-
   "name": "Create React App Sample",
-
-  "description": "Progressive Web Application built using React",
-
-  "lang": "en",
-
-  "dir": "ltr",
-
   "icons": [
     {
       "src": "favicon.ico",
-
-      "sizes": "16x16 24x24 32x32 64x64",
-
-      "type": "image/x-icon",
-
-      "purpose": "any"
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
     },
-
     {
       "src": "logo192.png",
-
       "type": "image/png",
-
-      "sizes": "192x192",
-
-      "purpose": "maskable any"
+      "sizes": "192x192"
     },
-
     {
       "src": "logo512.png",
-
       "type": "image/png",
-
-      "sizes": "512x512",
-
-      "purpose": "maskable any"
+      "sizes": "512x512"
     }
   ],
-
   "start_url": ".",
-
-  "scope": ".",
-
   "display": "standalone",
-
-  "orientation": "portrait",
-
   "theme_color": "#000000",
-
-  "background_color": "#ffffff",
-
-  "categories": [
-    "productivity",
-    "education",
-    "technology"
-  ]
+  "background_color": "#ffffff"
 }
