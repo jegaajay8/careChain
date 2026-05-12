@@ -48,3 +48,26 @@ CREATE TABLE IF NOT EXISTS hospitals (
     postal_code VARCHAR(20) NULL, 
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- E. Patients Table
+CREATE TABLE IF NOT EXISTS patients (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    hospital_id INT NOT NULL,
+    fullname VARCHAR(100) NOT NULL,
+    nic VARCHAR(20),
+    blood_group VARCHAR(5),
+    FOREIGN KEY (hospital_id) REFERENCES hospitals(id) ON DELETE CASCADE
+);
+
+-- F. Requests Table
+CREATE TABLE IF NOT EXISTS requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    hospital_id INT NOT NULL,
+    blood_group VARCHAR(5) NOT NULL,
+    district VARCHAR(50) NOT NULL,
+    status ENUM('open', 'accepted', 'closed') DEFAULT 'open',
+    accepted_donor_id INT NULL, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (hospital_id) REFERENCES hospitals(id) ON DELETE CASCADE,
+    FOREIGN KEY (accepted_donor_id) REFERENCES donors(id) ON DELETE SET NULL
+);
