@@ -1,119 +1,69 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 function Login({ setPage, setUser }) {
 
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [showPassword, setShowPassword] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
-    const [rememberMe, setRememberMe] = useState(false);
-
-    useEffect(() => {
-        const savedUser = localStorage.getItem("user");
-        if (savedUser) {
-            const userData = JSON.parse(savedUser);
-            setUser(userData);
-
-            if (userData.role === "donor") {
-                setPage("donorDashboard");
-            } else if (userData.role === "hospital") {
-                setPage("hospitalDashboard");
-            }
-        }
-    }, []);
 
     const handleLogin = async () => {
-        if (!username || !password) {
-            setError("Please fill all fields");
-            return;
+
+        const res = await fetch("http://localhost:5001/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (data.role === "donor") {
+            setUser(data);
+            setPage("donorDashboard");
         }
-
-        setLoading(true);
-        setError("");
-
-        try {
-            const res = await fetch("http://localhost:5001/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ username, password })
-            });
-
-            const data = await res.json();
-
-            if (data.role === "donor") {
-                if (rememberMe) localStorage.setItem("user", JSON.stringify(data));
-                setUser(data);
-                setPage("donorDashboard");
-            }
-            else if (data.role === "hospital") {
-                if (rememberMe) localStorage.setItem("user", JSON.stringify(data));
-                setUser(data);
-                setPage("hospitalDashboard");
-            }
-            else {
-                setError("Invalid Login");
-            }
-        } catch (err) {
-            setError("Server error");
-        } finally {
-            setLoading(false);
+        else if (data.role === "hospital") {
+            setUser(data);
+            setPage("hospitalDashboard");
+        }
+        else {
+            alert("Invalid Login");
         }
     };
 
     return (
-        <div className="form-container">
-            <h2>careChain Login</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
+        <div className="card card-sm">
+            <h2 style={{ textAlign: "center", marginBottom: "2rem" }}>Login to your account</h2>
 
             <div className="form-group">
+                <label>Username</label>
                 <input
-                    placeholder="Username"
+                    placeholder="Enter your username"
                     onChange={(e) => setUsername(e.target.value)}
                 />
             </div>
-            <div className="password-wrapper">
+
+            <div className="form-group">
+                <label>Password</label>
                 <input
-                    type={showPassword ? "text" : "password"}
-                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                    name="password"
-                    placeholder="Password"
+                    type="password"
+                    placeholder="Enter your password"
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <span
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="eye-icon"
-                    >
-                    {showPassword ? "🙈" : "👁️"}
-                </span>
-            </div><br/>
+            </div>
 
-            <label>
-                <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                />
-                Remember Me
-            </label>
-            <br />
-            
-
-            <button onClick={handleLogin} disabled={loading}>
-                {loading ? "Logging in..." : "Login"}
+            <button className="btn btn-primary" onClick={handleLogin} style={{ marginTop: "1rem" }}>
+                Login
             </button>
 
-            <br/>
-
-            <button onClick={() => setPage("registerDonor")}>
-                Register as Donor
-            </button>
-
-            <br/>
-
-            <button onClick={() => setPage("registerHospital")}>
-                Register as Hospital
-            </button>
+            <div style={{ marginTop: "2rem", textAlign: "center", borderTop: "1px solid #E2E8F0", paddingTop: "1.5rem" }}>
+                <p style={{ marginBottom: "1rem", fontSize: "0.875rem" }}>Don't have an account?</p>
+                <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+                    <button className="btn btn-secondary" onClick={() => setPage("registerDonor")} style={{ padding: "0.5rem 1rem", fontSize: "0.875rem" }}>
+                        Register Donor
+                    </button>
+                    <button className="btn btn-secondary" onClick={() => setPage("registerHospital")} style={{ padding: "0.5rem 1rem", fontSize: "0.875rem" }}>
+                        Register Hospital
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
