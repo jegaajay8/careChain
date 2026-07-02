@@ -3,7 +3,7 @@ USE carechain;
 
 -- 1. TABLES
 
---A. Master Hospitals List
+-- A. Master Hospitals List
 CREATE TABLE IF NOT EXISTS master_hospitals (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
