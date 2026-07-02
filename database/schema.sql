@@ -1,7 +1,9 @@
 CREATE DATABASE IF NOT EXISTS carechain;
 USE carechain;
 
--- A. Master Hospitals List
+-- 1. TABLES
+
+--A. Master Hospitals List
 CREATE TABLE IF NOT EXISTS master_hospitals (
     id INT AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -10,6 +12,7 @@ CREATE TABLE IF NOT EXISTS master_hospitals (
     lat DECIMAL(10, 8) NOT NULL,
     lng DECIMAL(11, 8) NOT NULL
 );
+
 -- B. Users Table (Core Auth)
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -18,6 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
     role ENUM('donor', 'hospital', 'admin') NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
 -- C. Donors Table
 CREATE TABLE IF NOT EXISTS donors (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -72,9 +76,8 @@ CREATE TABLE IF NOT EXISTS requests (
     FOREIGN KEY (accepted_donor_id) REFERENCES donors(id) ON DELETE SET NULL
 );
 
--- ==========================================
+
 -- 2. MASTER DATA SEEDING
--- ==========================================
 
 INSERT INTO master_hospitals (name, district, official_id, lat, lng) VALUES 
 ('National Hospital of Sri Lanka', 'Colombo', 'COL-NHSL-001', 6.9271, 79.8612),
