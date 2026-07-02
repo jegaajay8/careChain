@@ -1,30 +1,24 @@
 const mysql = require("mysql2");
 
-// Create MySQL Connection Pool
+// Using a Pool instead of a single connection for better stability
 const db = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-
+    host: "localhost",
+    user: "root",
+    password: "211204@La",
+    database: "carechain",
     waitForConnections: true,
-    connectionLimit: 10,
+    connectionLimit: 10, // Allows up to 10 simultaneous connections
     queueLimit: 0
 });
 
-// Check Database Connection
+// Test the pool connection on startup
 db.getConnection((err, connection) => {
-
     if (err) {
-        console.error("❌ Database connection failed:", err.message);
-        return;
+        console.error("❌ CareChain Database Error:", err.message);
+    } else {
+        console.log("✅ CareChain Database connected via Connection Pool.");
+        connection.release(); // Return the connection to the pool
     }
-
-    console.log("✅ Database connected successfully");
-
-    // Release the connection back to pool
-    connection.release();
 });
 
-// Export Promise-Based Pool
 module.exports = db;
