@@ -29,35 +29,41 @@ function Login({ setPage, setUser }) {
     };
 
     return (
-        <div>
-            <h2>careChain Login</h2>
+        <div className="card card-sm">
+            <h2 style={{ textAlign: "center", marginBottom: "2rem" }}>Login to your account</h2>
 
-            <input
-                placeholder="Username"
-                onChange={(e) => setUsername(e.target.value)}
-            />
-            <br /><br />
+            <div className="form-group">
+                <label>Username</label>
+                <input
+                    placeholder="Enter your username"
+                    onChange={(e) => setUsername(e.target.value)}
+                />
+            </div>
 
-            <input
-                type="password"
-                placeholder="Password"
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <br /><br />
+            <div className="form-group">
+                <label>Password</label>
+                <input
+                    type="password"
+                    placeholder="Enter your password"
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+            </div>
 
-            <button onClick={handleLogin}>Login</button>
-
-            <br /><br />
-
-            <button onClick={() => setPage("registerDonor")}>
-                Register as Donor
+            <button className="btn btn-primary" onClick={handleLogin} style={{ marginTop: "1rem" }}>
+                Login
             </button>
 
-            <br /><br />
-
-            <button onClick={() => setPage("registerHospital")}>
-                Register as Hospital
-            </button>
+            <div style={{ marginTop: "2rem", textAlign: "center", borderTop: "1px solid #E2E8F0", paddingTop: "1.5rem" }}>
+                <p style={{ marginBottom: "1rem", fontSize: "0.875rem" }}>Don't have an account?</p>
+                <div style={{ display: "flex", gap: "1rem", justifyContent: "center" }}>
+                    <button className="btn btn-secondary" onClick={() => setPage("registerDonor")} style={{ padding: "0.5rem 1rem", fontSize: "0.875rem" }}>
+                        Register Donor
+                    </button>
+                    <button className="btn btn-secondary" onClick={() => setPage("registerHospital")} style={{ padding: "0.5rem 1rem", fontSize: "0.875rem" }}>
+                        Register Hospital
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

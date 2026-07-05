@@ -17,9 +17,9 @@ const DefaultIcon = L.icon({
 // Custom Blinking Icon for Urgent Needs
 const BloodDropIcon = L.divIcon({
   className: 'custom-div-icon',
-  html: `<div class="blood-drop-inner"></div>`,
-  iconSize: [30, 30],
-  iconAnchor: [15, 30]
+  html: `<div class="blood-drop-icon" style="margin: 5px auto;"></div>`,
+  iconSize: [34, 34],
+  iconAnchor: [17, 34]
 });
 
 function DonorDashboard({ user, logout }) {
@@ -78,61 +78,54 @@ function DonorDashboard({ user, logout }) {
     }
   };
 
-  if (loading) return <div className="App" style={{padding: "50px"}}><h3>Syncing CareChain Data...</h3></div>;
+  if (loading) return (
+      <div className="flex-center" style={{ minHeight: "50vh" }}>
+          <div className="loader"></div>
+          <h3 style={{ color: "var(--text-muted)" }}>Syncing CareChain Data...</h3>
+      </div>
+  );
 
   return (
-    <div className="App" style={{ maxWidth: "1000px", margin: "20px auto" }}>
+    <div className="card card-lg" style={{ padding: "2rem" }}>
       <style>{`
-        .blood-drop-inner {
-            width: 16px; height: 16px;
-            background-color: #c0392b;
-            border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg);
-            margin: 7px auto;
-            animation: pulse-red 1.2s infinite;
-            border: 2px solid white;
-            box-shadow: 0 0 10px rgba(192, 57, 43, 0.6);
-        }
-        @keyframes pulse-red {
-            0% { transform: rotate(-45deg) scale(0.9); opacity: 0.8; }
-            50% { transform: rotate(-45deg) scale(1.2); opacity: 1; }
-            100% { transform: rotate(-45deg) scale(0.9); opacity: 0.8; }
-        }
         .fade-in { animation: fadeIn 0.4s ease-in; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-         <div style={{ textAlign: "left" }}>
-            <h2 style={{margin: 0, color: "#c0392b"}}>Donor Dashboard</h2>
-            <p style={{margin: 0, fontSize: "14px", color: "#666"}}>Welcome back, <b>{profile?.fullname || user.username}</b></p>
+      <div className="dashboard-header">
+         <div>
+            <h2 style={{ margin: 0, color: "var(--accent)" }}>Donor Dashboard</h2>
+            <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>Welcome back, <b style={{ color: "var(--primary)" }}>{profile?.fullname || user.username}</b></p>
          </div>
-         <button onClick={logout} style={{background: "#2c3e50", width: "auto"}}>Logout</button>
+         <button className="btn btn-secondary" onClick={logout} style={{ width: "auto", padding: "0.5rem 1.5rem" }}>Logout</button>
       </div>
 
       {error && (
-        <div style={{ color: "#721c24", background: "#f8d7da", padding: "12px", borderRadius: "8px", marginBottom: "20px", border: "1px solid #f5c6cb" }}>
-            {error} <button onClick={loadDashboardData} style={{padding: "2px 10px", marginLeft: "10px", width: "auto", fontSize: "12px"}}>Retry</button>
+        <div style={{ color: "#721c24", background: "#f8d7da", padding: "12px", borderRadius: "8px", marginBottom: "20px", border: "1px solid #f5c6cb", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            {error} 
+            <button className="btn btn-secondary" onClick={loadDashboardData} style={{ padding: "0.25rem 0.75rem", width: "auto", fontSize: "0.875rem" }}>Retry</button>
         </div>
       )}
       
       {/* Navigation */}
-      <div style={{ marginBottom: "25px", display: "flex", gap: "10px" }}>
-        <button onClick={() => setSection("map")} style={{ backgroundColor: section === "map" ? "#c0392b" : "#95a5a6", flex: 1 }}>Hospital Map</button> 
-        <button onClick={() => setSection("requests")} style={{ backgroundColor: section === "requests" ? "#c0392b" : "#95a5a6", flex: 1 }}>List View</button>
-        <button onClick={() => setSection("profile")} style={{ backgroundColor: section === "profile" ? "#c0392b" : "#95a5a6", flex: 1 }}>My Profile</button>
+      <div className="tabs">
+        <div className={`tab ${section === "map" ? "active" : ""}`} onClick={() => setSection("map")}>Hospital Map</div> 
+        <div className={`tab ${section === "requests" ? "active" : ""}`} onClick={() => setSection("requests")}>List View</div>
+        <div className={`tab ${section === "profile" ? "active" : ""}`} onClick={() => setSection("profile")}>My Profile</div>
       </div>
 
       {/* SECTION: MAP */}
       {section === "map" && (
         <div className="fade-in">
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-            <h3 style={{margin: 0}}>Sri Lanka Urgent Needs</h3>
-            <span style={{ fontSize: "12px", color: "#c0392b", fontWeight: "bold" }}>🚨 Blinking = Urgent</span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+            <h3 style={{ margin: 0, color: "var(--accent)", fontSize: "1.25rem" }}>Sri Lanka Urgent Needs</h3>
+            <span style={{ fontSize: "0.875rem", color: "var(--primary)", fontWeight: "600", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              <span className="blood-drop-icon" style={{ width: "12px", height: "12px", borderWidth: "1px", animationDuration: "1s" }}></span> Blinking = Urgent
+            </span>
           </div>
           
-          <div style={{ height: "480px", border: "1px solid #ddd", borderRadius: "12px", overflow: "hidden" }}>
+          <div className="map-container">
             <MapContainer center={[7.8731, 80.7718]} zoom={7.5} style={{ height: "100%", width: "100%" }}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               
@@ -148,18 +141,18 @@ function DonorDashboard({ user, logout }) {
                     icon={hasUrgent ? BloodDropIcon : DefaultIcon}
                   >
                     <Popup>
-                      <div style={{ minWidth: "140px" }}>
-                        <b style={{ color: "#c0392b" }}>{h.hospital_name}</b><br />
-                        <span style={{ fontSize: "11px" }}>{h.district}</span>
-                        <hr style={{ margin: "8px 0", border: "0.5px solid #eee" }} />
+                      <div style={{ minWidth: "160px" }}>
+                        <b style={{ color: "var(--primary)", fontSize: "1rem" }}>{h.hospital_name}</b><br />
+                        <span style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>{h.district}</span>
+                        <hr style={{ margin: "10px 0", border: "0", borderTop: "1px solid #E2E8F0" }} />
                         
                         {activeReq ? (
                           <div style={{ textAlign: "center" }}>
-                            <p style={{ color: "#c0392b", fontWeight: "bold", margin: "5px 0" }}>Need: {activeReq.blood_group}</p>
-                            <button onClick={() => acceptRequest(activeReq.id)} style={{ padding: "6px", fontSize: "12px", width: "100%" }}>Accept Now</button>
+                            <p style={{ color: "var(--primary)", fontWeight: "600", margin: "5px 0" }}>Need: {activeReq.blood_group}</p>
+                            <button className="btn btn-primary" onClick={() => acceptRequest(activeReq.id)} style={{ padding: "0.5rem", fontSize: "0.875rem", width: "100%", marginTop: "0.5rem" }}>Accept Now</button>
                           </div>
                         ) : (
-                          <p style={{ color: "#27ae60", margin: 0, fontSize: "12px" }}>✅ Stock Stable</p>
+                          <p style={{ color: "var(--success)", margin: 0, fontSize: "0.875rem", fontWeight: "500", textAlign: "center" }}>✅ Stock Stable</p>
                         )}
                       </div>
                     </Popup>
@@ -174,15 +167,17 @@ function DonorDashboard({ user, logout }) {
       {/* SECTION: LIST VIEW */}
       {section === "requests" && (
         <div className="fade-in" style={{ textAlign: "left" }}>
-          <h3>Available Blood Requests</h3>
-          {requests.length === 0 ? <p style={{color: "#999"}}>No active requests found at this moment.</p> :
+          <h3 style={{ marginBottom: "1.5rem" }}>Available Blood Requests</h3>
+          {requests.length === 0 ? <p style={{color: "var(--text-muted)", fontStyle: "italic"}}>No active requests found at this moment.</p> :
             requests.map(r => (
-              <div key={r.id} style={{ background: "white", border: "1px solid #eee", padding: "15px", borderRadius: "10px", marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
+              <div key={r.id} className="alert-card" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                    <h4 style={{margin: "0 0 5px 0"}}>{r.hospital_name}</h4>
-                    <span style={{color: "#c0392b", fontWeight: "bold"}}>{r.blood_group} Needed</span>
+                    <h4 style={{ margin: "0 0 0.25rem 0", color: "var(--accent)" }}>{r.hospital_name}</h4>
+                    <span style={{ color: "var(--primary)", fontWeight: "600", fontSize: "0.875rem", display: "inline-block", backgroundColor: "rgba(230, 57, 70, 0.1)", padding: "0.25rem 0.5rem", borderRadius: "4px" }}>
+                        🩸 {r.blood_group} Needed
+                    </span>
                 </div>
-                <button onClick={() => acceptRequest(r.id)} style={{ width: "auto", padding: "8px 20px" }}>Accept</button>
+                <button className="btn btn-primary" onClick={() => acceptRequest(r.id)} style={{ width: "auto", padding: "0.5rem 1.5rem" }}>Accept</button>
               </div>
             ))
           }
@@ -192,14 +187,14 @@ function DonorDashboard({ user, logout }) {
       {/* SECTION: PROFILE */}
       {section === "profile" && profile && (
         <div style={{ textAlign: "left" }} className="fade-in">
-          <h3>Your Donor Profile</h3>
-          <div style={{ background: "white", padding: "25px", borderRadius: "12px", border: "1px solid #eee" }}>
-              <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px"}}>
-                  <p><b>Name:</b> {profile.fullname}</p>
-                  <p><b>NIC:</b> {profile.nic}</p>
-                  <p><b>Blood Type:</b> <span style={{color: "#c0392b", fontWeight: "bold"}}>{profile.blood_group}</span></p>
-                  <p><b>District:</b> {profile.district}</p>
-                  <p><b>Contact:</b> {profile.telephone}</p>
+          <h3 style={{ marginBottom: "1.5rem" }}>Your Donor Profile</h3>
+          <div style={{ background: "rgba(255, 255, 255, 0.5)", padding: "2rem", borderRadius: "var(--radius-md)", border: "1px solid #E2E8F0" }}>
+              <div className="grid-2-col">
+                  <div style={{ marginBottom: "1rem" }}><span style={{ color: "var(--text-muted)", fontSize: "0.875rem", display: "block" }}>Full Name</span><strong style={{ fontSize: "1.1rem" }}>{profile.fullname}</strong></div>
+                  <div style={{ marginBottom: "1rem" }}><span style={{ color: "var(--text-muted)", fontSize: "0.875rem", display: "block" }}>NIC Number</span><strong style={{ fontSize: "1.1rem" }}>{profile.nic}</strong></div>
+                  <div style={{ marginBottom: "1rem" }}><span style={{ color: "var(--text-muted)", fontSize: "0.875rem", display: "block" }}>Blood Type</span><strong style={{ fontSize: "1.5rem", color: "var(--primary)" }}>{profile.blood_group}</strong></div>
+                  <div style={{ marginBottom: "1rem" }}><span style={{ color: "var(--text-muted)", fontSize: "0.875rem", display: "block" }}>District</span><strong style={{ fontSize: "1.1rem" }}>{profile.district}</strong></div>
+                  <div style={{ marginBottom: "1rem" }}><span style={{ color: "var(--text-muted)", fontSize: "0.875rem", display: "block" }}>Contact</span><strong style={{ fontSize: "1.1rem" }}>{profile.telephone}</strong></div>
               </div>
           </div>
         </div>

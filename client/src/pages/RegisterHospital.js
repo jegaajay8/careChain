@@ -115,54 +115,66 @@ function RegisterHospital({ setPage }) {
     };
 
     return (
-        <div className="App" style={{ maxWidth: "850px", margin: "auto" }}>
-            <h2>Hospital Onboarding</h2>
-            <p style={{fontSize: "14px", color: "#666"}}>Register your institution to the CareChain network.</p>
+        <div className="card card-lg">
+            <h2 style={{ textAlign: "center", marginBottom: "0.5rem" }}>Hospital Onboarding</h2>
+            <p style={{ textAlign: "center", marginBottom: "2rem" }}>Register your institution to the CareChain network.</p>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", textAlign: "left", marginBottom: "20px" }}>
+            <div className="grid-2-col" style={{ marginBottom: "2rem" }}>
                 {/* Representative Details */}
-                <div style={{ background: "#fdfdfd", padding: "15px", borderRadius: "8px", border: "1px solid #eee" }}>
-                    <h4 style={{marginTop: 0, color: "#c0392b"}}>1. Representative Details</h4>
+                <div style={{ background: "rgba(255,255,255,0.5)", padding: "1.5rem", borderRadius: "var(--radius-sm)", border: "1px solid #E2E8F0" }}>
+                    <h4 style={{ color: "var(--secondary)", marginBottom: "1rem" }}>1. Representative Details</h4>
                     
-                    <label>Hospital Representative Name</label>
-                    <input name="rep_name" value={form.rep_name} placeholder="e.g. Dr. A. Doctor_name" onChange={handleChange} />
+                    <div className="form-group">
+                        <label>Hospital Representative Name</label>
+                        <input name="rep_name" value={form.rep_name} placeholder="e.g. Dr. A. Doctor_name" onChange={handleChange} />
+                    </div>
                     
-                    <label>Account Username</label>
-                    <input name="username" value={form.username} placeholder="hospital_user_123" onChange={handleChange} />
+                    <div className="form-group">
+                        <label>Account Username</label>
+                        <input name="username" value={form.username} placeholder="hospital_user_123" onChange={handleChange} />
+                    </div>
                     
-                    <label>Password</label>
-                    <input type="password" name="password" value={form.password} placeholder="••••••••" onChange={handleChange} />
+                    <div className="form-group">
+                        <label>Password</label>
+                        <input type="password" name="password" value={form.password} placeholder="••••••••" onChange={handleChange} />
+                    </div>
                 </div>
 
                 {/* Hospital Linkage */}
-                <div style={{ background: "#fdfdfd", padding: "15px", borderRadius: "8px", border: "1px solid #eee" }}>
-                    <h4 style={{marginTop: 0, color: "#c0392b"}}>2. Hospital Information</h4>
+                <div style={{ background: "rgba(255,255,255,0.5)", padding: "1.5rem", borderRadius: "var(--radius-sm)", border: "1px solid #E2E8F0" }}>
+                    <h4 style={{ color: "var(--secondary)", marginBottom: "1rem" }}>2. Hospital Information</h4>
                     
-                    <label>District</label>
-                    <select name="district" value={form.district} onChange={handleDistrictChange}>
-                        <option value="">-- Select District --</option>
-                        {districts.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
+                    <div className="form-group">
+                        <label>District</label>
+                        <select name="district" value={form.district} onChange={handleDistrictChange}>
+                            <option value="">-- Select District --</option>
+                            {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                        </select>
+                    </div>
 
-                    <label style={{marginTop: "10px", display: "block"}}>Select Hospital</label>
-                    <select 
-                        name="hospital_name" 
-                        value={form.hospital_name} 
-                        onChange={handleHospitalSelect}
-                        disabled={!form.district || isLoading}
-                    >
-                        <option value="">{isLoading ? "Loading..." : "-- Choose Hospital --"}</option>
-                        {Array.isArray(filteredHospitals) && filteredHospitals.map(h => (
-                            <option key={h.id || h.official_id} value={h.name}>{h.name}</option>
-                        ))}
-                    </select>
+                    <div className="form-group">
+                        <label>Select Hospital</label>
+                        <select 
+                            name="hospital_name" 
+                            value={form.hospital_name} 
+                            onChange={handleHospitalSelect}
+                            disabled={!form.district || isLoading}
+                        >
+                            <option value="">{isLoading ? "Loading..." : "-- Choose Hospital --"}</option>
+                            {Array.isArray(filteredHospitals) && filteredHospitals.map(h => (
+                                <option key={h.id || h.official_id} value={h.name}>{h.name}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                    <label style={{marginTop: "10px", display: "block"}}>Registration ID (Auto)</label>
-                    <input name="hospital_id" value={form.hospital_id} readOnly style={{background: "#f1f1f1"}} />
+                    <div className="form-group">
+                        <label>Registration ID (Auto)</label>
+                        <input name="hospital_id" value={form.hospital_id} readOnly style={{ backgroundColor: "#F1F5F9", cursor: "not-allowed", color: "var(--text-muted)" }} />
+                    </div>
                 </div>
             </div>
 
-            <div className="map-container" style={{ height: "300px", border: "2px solid #ddd", borderRadius: "10px", overflow: "hidden" }}>
+            <div className="map-container" style={{ marginBottom: "2rem" }}>
                 <MapContainer 
                     center={[form.lat, form.lng]} 
                     zoom={15} 
@@ -176,9 +188,13 @@ function RegisterHospital({ setPage }) {
                 </MapContainer>
             </div>
 
-            <div style={{marginTop: "25px", display: "flex", gap: "10px", justifyContent: "center"}}>
-                <button onClick={handleSubmit} style={{width: "250px", background: "#c0392b"}}>Complete Registration</button>
-                <button className="back-btn" onClick={() => setPage("login")} style={{width: "150px"}}>Cancel</button>
+            <div style={{ display: "flex", gap: "1rem", justifyContent: "center", alignItems: "center" }}>
+                <button className="btn btn-primary" onClick={handleSubmit} style={{ width: "auto", minWidth: "250px" }}>
+                    Complete Registration
+                </button>
+                <button className="btn-text" onClick={() => setPage("login")}>
+                    Cancel
+                </button>
             </div>
         </div>
     );

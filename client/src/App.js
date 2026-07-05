@@ -56,9 +56,9 @@ function App() {
   const renderPage = () => {
     if (isInitializing) {
       return (
-        <div className="App" style={{ textAlign: "center", padding: "100px" }}>
+        <div className="flex-center" style={{ minHeight: "50vh" }}>
           <div className="loader"></div>
-          <h3>Connecting to CareChain...</h3>
+          <h3 style={{ color: "var(--text-muted)" }}>Connecting to CareChain...</h3>
         </div>
       );
     }
@@ -104,17 +104,20 @@ function App() {
 
   return (
     <div className="container"> 
-      <header style={{ padding: "20px 0", textAlign: "center" }}>
-          <h1 style={{ color: "#c0392b", margin: 0 }}>CareChain</h1>
-          <small style={{ color: "#7f8c8d", fontWeight: "bold" }}>Sri Lanka Blood Management System</small>
+      <header className="flex-center" style={{ marginBottom: "2rem" }}>
+          <h1 style={{ color: "var(--primary)", margin: 0, display: "flex", alignItems: "center", gap: "10px" }}>
+            <span className="blood-drop-icon" style={{ width: "20px", height: "20px", border: "none" }}></span>
+            CareChain
+          </h1>
+          <p style={{ color: "var(--text-muted)", fontWeight: "500", marginTop: "0.5rem" }}>Sri Lanka Blood Management System</p>
       </header>
 
       {renderPage()}
       
-      <footer style={{ marginTop: "40px", fontSize: "12px", color: "#95a5a6", textAlign: "center", paddingBottom: "30px" }}>
-        <strong>CareChain Sri Lanka</strong><br />
-        Bridging Donors and Hospitals • 2026<br />
-        <span style={{ color: "#e74c3c" }}>University of Moratuwa CSE Project</span>
+      <footer className="flex-center" style={{ marginTop: "4rem", paddingTop: "2rem", borderTop: "1px solid #E2E8F0", fontSize: "0.875rem" }}>
+        <strong style={{ color: "var(--accent)" }}>CareChain Sri Lanka</strong>
+        <p style={{ margin: "0.5rem 0" }}>Bridging Donors and Hospitals • 2026</p>
+        <span style={{ color: "var(--primary)", fontWeight: "500" }}>University of Moratuwa CSE Project</span>
       </footer>
     </div>
   );
