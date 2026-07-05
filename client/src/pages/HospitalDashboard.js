@@ -5,155 +5,77 @@ function HospitalDashboard({ user, logout }) {
   const [acceptedDonors, setAcceptedDonors] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [patientSearch, setPatientSearch] = useState("");
-  const [bloodFilter, setBloodFilter] = useState("");
-  const [history, setHistory] = useState([]);
-  const [notifications, setNotifications] = useState([]);
 
-  // ---------------- Load Accepted Donors ----------------
+  // ---------------- Load Accepted Donors (Memoized) ----------------
   const loadAcceptedDonors = useCallback(async () => {
     setLoading(true);
+    setError("");
     try {
-      const res = await fetch(`http://localhost:5001/accepted-donors/${user.id}`);
+      // UPDATED: Added /api/ prefix to match server.js
+      const res = await fetch(`http://localhost:5001/api/accepted-donors/${user.id}`);
       if (!res.ok) throw new Error("Failed to load accepted donors");
       const data = await res.json();
-      setAcceptedDonors(data);
+      setAcceptedDonors(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-   }, [user.id]);
+  }, [user.id]);
 
-   // ----------- EXTRA FUNCTIONS -----------
-
-  const loadHistory = async () => {
-    try {
-      const res = await fetch(`http://localhost:5001/hospital-history/${user.id}`);
-      const data = await res.json();
-      setHistory(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const loadNotifications = async () => {
-    try {
-      const res = await fetch(`http://localhost:5001/hospital-notifications/${user.id}`);
-      const data = await res.json();
-      setNotifications(data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  // ----------------- RENDER -----------------
   return (
-    <div style={{ maxWidth: "900px", margin: "auto", padding: "20px" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "20px" }}>
-        <p>Hospital: <strong>{user.username}</strong></p>
-        <button onClick={logout} style={{ backgroundColor: "#e74c3c", color: "white", padding: "5px 10px" }}>Logout</button>
+    <div className="App" style={{ maxWidth: "900px", margin: "20px auto", padding: "20px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+        <div style={{textAlign: "left"}}>
+            <h2 style={{margin: 0, color: "#c0392b"}}>CareChain Hospital</h2>
+            <p style={{margin: 0, fontSize: "14px"}}>Welcome, <strong>{user.username}</strong></p>
+        </div>
+        <button onClick={logout} style={{ width: "auto", background: "#2c3e50" }}>Logout</button>
       </div>
 
-      <h2>Hospital Dashboard</h2>
-
-      {/* Tabs */}
-      <div style={{ marginBottom: "20px" }}>
-        <button onClick={() => { setSection("notifications"); loadNotifications(); }}>
-          Notifications ({notifications.length})
-        </button>
-
-        <button onClick={() => { setSection("history"); loadHistory(); }} style={{ marginLeft: "10px" }}>
-          Request History
-        </button>
-
-        <button
-          onClick={() => setSection("patients")}
-          style={section === "patients" ? activeTabStyle : tabStyle}
+      {/* Navigation Tabs */}
+      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+        <button 
+          onClick={() => setSection("patients")} 
+          style={{ flex: 1, backgroundColor: section === "patients" ? "#c0392b" : "#7f8c8d" }}
         >
-          Patients
+          Manage Patients
         </button>
-        <button
-          onClick={() => setSection("requests")}
-          style={section === "requests" ? activeTabStyle : tabStyle}
+        <button 
+          onClick={() => setSection("requests")} 
+          style={{ flex: 1, backgroundColor: section === "requests" ? "#c0392b" : "#7f8c8d" }}
         >
-          Send Blood Request
+          Blood Requests
         </button>
-        <button
-          onClick={() => { setSection("accepted"); loadAcceptedDonors(); }}
-          style={section === "accepted" ? activeTabStyle : tabStyle}
+        <button 
+          onClick={() => { setSection("accepted"); loadAcceptedDonors(); }} 
+          style={{ flex: 1, backgroundColor: section === "accepted" ? "#c0392b" : "#7f8c8d" }}
         >
-          Accepted Donors
+          Accepted Donors ({acceptedDonors.length})
         </button>
       </div>
 
-      <hr />
+      <hr style={{ border: "0.5px solid #eee", marginBottom: "20px" }} />
 
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: "red" }}>Error: {error}</p>}
+      {error && <p style={{ color: "#721c24", background: "#f8d7da", padding: "10px", borderRadius: "5px" }}>{error}</p>}
 
       {/* Sections */}
-      {section === "patients" && (
-        <PatientSection
-          user={user}
-          patientSearch={patientSearch}
-          setPatientSearch={setPatientSearch}
-          bloodFilter={bloodFilter}
-          setBloodFilter={setBloodFilter}
-        />
-      )}
+      {section === "patients" && <PatientSection user={user} />}
       {section === "requests" && <RequestSection user={user} />}
-      {section === "accepted" && <AcceptedDonorsSection donors={acceptedDonors} reload={loadAcceptedDonors} />}
-      {section === "history" && (
-        <div>
-          <h3>Hospital Activity History</h3>
-            {history.length === 0 ? <p>No history</p> :
-            history.map(h => (
-              <div key={h.id} style={{ border: "1px solid blue", margin: "10px", padding: "10px" }}>
-                <p>Patient: {h.patient_name}</p>
-                <p>Action: {h.action}</p>
-                <p>Date: {h.date}</p>
-              </div>
-            ))
-            }
-        </div>
-      )}
-
-      {section === "notifications" && (
-        <div>
-        <h3>Notifications</h3>
-          {notifications.length === 0 ? <p>No notifications</p> :
-            notifications.map(n => (
-            <div key={n.id} style={{ background: "#fff3cd", padding: "10px", margin: "10px 0" }}>
-              <p>{n.message}</p>
-              <small>{n.created_at}</small>
-            </div>
-            ))
-          }
-        </div>
+      {section === "accepted" && (
+        <AcceptedDonorsSection 
+          donors={acceptedDonors} 
+          reload={loadAcceptedDonors} 
+          loading={loading}
+        />
       )}
     </div>
   );
 }
 
-// ---------- STYLES ----------
-const tabStyle = {
-  padding: "8px 15px",
-  marginRight: "5px",
-  cursor: "pointer",
-  backgroundColor: "#ecf0f1",
-  border: "1px solid #bdc3c7",
-};
-
-const activeTabStyle = {
-  ...tabStyle,
-  backgroundColor: "#3498db",
-  color: "white",
-  border: "1px solid #2980b9",
-};
-
 // ---------------- PATIENT SECTION ----------------
-function PatientSection({ user, patientSearch, setPatientSearch, bloodFilter, setBloodFilter }){
+function PatientSection({ user }) {
   const [form, setForm] = useState({ fullname: "", nic: "", blood_group: "" });
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -161,7 +83,8 @@ function PatientSection({ user, patientSearch, setPatientSearch, bloodFilter, se
   const loadPatients = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5001/get-patients/${user.id}`);
+      // UPDATED: Added /api/ prefix
+      const res = await fetch(`http://localhost:5001/api/get-patients/${user.id}`);
       const data = await res.json();
       setPatients(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -171,64 +94,50 @@ function PatientSection({ user, patientSearch, setPatientSearch, bloodFilter, se
     }
   }, [user.id]);
 
-
-  useEffect(() => {
-    loadPatients();
-  }, [loadPatients]);
-
+  useEffect(() => { loadPatients(); }, [loadPatients]);
 
   const handleSubmit = async () => {
-    if (!form.fullname || !form.nic || !form.blood_group) return alert("Fill all fields");
+    if (!form.fullname || !form.nic || !form.blood_group) return alert("Please fill all fields");
     try {
-      await fetch("http://localhost:5001/add-patient", {
+      // UPDATED: Added /api/ prefix
+      const res = await fetch("http://localhost:5001/api/add-patient", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ hospital_user_id: user.id, ...form }),
       });
-      alert("Patient Added");
-      setForm({ fullname: "", nic: "", blood_group: "" });
-      loadPatients();
+      if (res.ok) {
+        alert("Patient Registered Successfully");
+        setForm({ fullname: "", nic: "", blood_group: "" });
+        loadPatients();
+      }
     } catch (err) {
-      console.error(err);
+      alert("Error adding patient");
     }
   };
 
   return (
-    <div>
-      <h3>Manage Patients</h3>
-      <input
-        placeholder="Search patient..."
-        value={patientSearch}
-        onChange={(e) => setPatientSearch(e.target.value)}
-      />
+    <div style={{ textAlign: "left" }}>
+      <h3>Register New Patient</h3>
+      <div style={{display: "grid", gap: "10px", background: "#f9f9f9", padding: "20px", borderRadius: "8px"}}>
+          <input placeholder="Full Name" value={form.fullname} onChange={e => setForm({ ...form, fullname: e.target.value })} />
+          <input placeholder="NIC Number" value={form.nic} onChange={e => setForm({ ...form, nic: e.target.value })} />
+          <select 
+            value={form.blood_group} 
+            onChange={e => setForm({ ...form, blood_group: e.target.value })}
+            style={{ padding: "12px", borderRadius: "6px", border: "1px solid #ddd" }}
+          >
+            <option value="">Select Blood Group</option>
+            {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+          </select>
+          <button onClick={handleSubmit} style={{marginTop: "10px"}}>Add Patient Record</button>
+      </div>
 
-      <select
-        value={bloodFilter}
-        onChange={(e) => setBloodFilter(e.target.value)}
-        style={{ marginLeft: "10px" }}
-      >
-        <option value="">All Blood Groups</option>
-        <option value="A+">A+</option>
-        <option value="B+">B+</option>
-        <option value="O+">O+</option>
-      
-      </select>
-
-      <input placeholder="Full Name" value={form.fullname} onChange={e => setForm({ ...form, fullname: e.target.value })} /><br />
-      <input placeholder="NIC" value={form.nic} onChange={e => setForm({ ...form, nic: e.target.value })} /><br />
-      <input placeholder="Blood Group" value={form.blood_group} onChange={e => setForm({ ...form, blood_group: e.target.value })} /><br />
-      <button onClick={handleSubmit} style={{ marginTop: "10px" }}>Register Patient</button>
-
-      <h4>Current Patients</h4>
-      {loading ? <p>Loading...</p> :
-        patients
-          .filter(p =>
-            p.fullname.toLowerCase().includes(patientSearch.toLowerCase()) &&
-            (bloodFilter === "" || p.blood_group === bloodFilter)
-          )
-          .map(p => (
-          <div key={p.id} style={{ border: "1px solid #ccc", padding: "10px", margin: "5px 0" }}>
-            {p.fullname} ({p.blood_group}) - NIC: {p.nic}
+      <h4 style={{ marginTop: "30px" }}>Registered Patients</h4>
+      {loading ? <p>Loading patients...</p> : 
+        patients.map(p => (
+          <div key={p.id} style={{ padding: "12px", borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between" }}>
+            <span><strong>{p.fullname}</strong> (NIC: {p.nic})</span>
+            <span style={{ color: "#c0392b", fontWeight: "bold" }}>{p.blood_group}</span>
           </div>
         ))
       }
@@ -242,61 +151,93 @@ function RequestSection({ user }) {
   const [district, setDistrict] = useState("");
 
   const handleRequest = async () => {
-    if (!blood_group || !district) return alert("Fill all fields");
+    if (!blood_group || !district) return alert("Fields cannot be empty");
     try {
-      await fetch("http://localhost:5001/send-request", {
+      // UPDATED: Added /api/ prefix
+      const res = await fetch("http://localhost:5001/api/send-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ hospital_user_id: user.id, blood_group, district }),
       });
-      alert("Blood Request Broadcasted!");
-      setBloodGroup("");
-      setDistrict("");
+      if (res.ok) {
+        alert("Urgent Request Broadcasted!");
+        setBloodGroup(""); setDistrict("");
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
   return (
-    <div>
-      <h3>Send Urgent Blood Request</h3>
-      <input placeholder="Blood Group (e.g. O+)" value={blood_group} onChange={e => setBloodGroup(e.target.value)} /><br />
-      <input placeholder="District" value={district} onChange={e => setDistrict(e.target.value)} /><br />
-      <button onClick={handleRequest} style={{ marginTop: "10px" }}>Broadcast Request</button>
+    <div style={{ textAlign: "left" }}>
+      <h3>Broadcast Urgent Blood Request</h3>
+      <p style={{ color: "#666", fontSize: "14px" }}>Sending this will alert all nearby donors and highlight your hospital on the map.</p>
+      
+      <div style={{background: "#fff5f5", padding: "20px", borderRadius: "8px", border: "1px solid #feb2b2"}}>
+          <select 
+            value={blood_group} 
+            onChange={e => setBloodGroup(e.target.value)}
+            style={{ padding: "12px", width: "100%", marginBottom: "15px", borderRadius: "6px", border: "1px solid #ddd" }}
+          >
+            <option value="">Required Blood Group</option>
+            {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(bg => <option key={bg} value={bg}>{bg}</option>)}
+          </select>
+
+          <input placeholder="District (e.g. Colombo)" value={district} onChange={e => setDistrict(e.target.value)} />
+          
+          <button onClick={handleRequest} style={{ backgroundColor: "#c0392b", marginTop: "10px" }}>Broadcast Request</button>
+      </div>
     </div>
   );
 }
 
 // ---------------- ACCEPTED DONORS SECTION ----------------
-function AcceptedDonorsSection({ donors, reload }) {
+function AcceptedDonorsSection({ donors, reload, loading }) {
   const handleMarkDone = async (request_id) => {
     try {
-      await fetch("http://localhost:5001/complete-request", {
+      // UPDATED: Added /api/ prefix
+      const res = await fetch("http://localhost:5001/api/complete-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ request_id }),
       });
-      alert("Donation marked as completed");
-      reload();
+      if (res.ok) {
+        alert("Donation process completed!");
+        reload();
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
   return (
-    <div>
-      <h3>Donors Who Accepted Requests</h3>
-      {donors.length === 0 ? <p>No active donor matches yet.</p> :
+    <div style={{ textAlign: "left" }}>
+      <div style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
+          <h3>Donors On Their Way</h3>
+          <button onClick={reload} style={{width: "auto", fontSize: "12px", padding: "5px 15px"}}>Refresh List</button>
+      </div>
+
+      {loading ? <p>Updating donor status...</p> : 
+        donors.length === 0 ? <p style={{color: "#999", padding: "20px", textAlign: "center", border: "1px dashed #ccc", borderRadius: "8px"}}>No donors have accepted requests yet.</p> :
         donors.map(d => (
-          <div key={d.request_id} style={{ border: "1px solid #27ae60", padding: "10px", margin: "5px 0", backgroundColor: "#f0fff0" }}>
-            <p><strong>Donor:</strong> {d.fullname}</p>
-            <p><strong>Blood:</strong> {d.blood_group} | <strong>Tel:</strong> {d.telephone}</p>
-            <button onClick={async () => {
-              const res = await fetch(`http://localhost:5001/donor-details/${d.donor_id}`);
-              const data = await res.json();
-              alert(`Full Details:\nName: ${data.fullname}\nNIC: ${data.nic}\nLocation: ${data.city}, ${data.district}`);
-            }}>View Details</button>
-            <button style={{ marginLeft: "10px", backgroundColor: "#27ae60", color: "white" }} onClick={() => handleMarkDone(d.request_id)}>Mark as Done</button>
+          <div key={d.request_id} style={{ border: "1px solid #27ae60", padding: "15px", borderRadius: "8px", margin: "10px 0", backgroundColor: "#f9fffb" }}>
+            <div style={{display: "flex", justifyContent: "space-between"}}>
+                <div>
+                    <p style={{margin: "0 0 5px 0"}}><strong>Donor:</strong> {d.fullname}</p>
+                    <p style={{margin: 0, fontSize: "14px"}}><strong>Contact:</strong> {d.telephone}</p>
+                </div>
+                <div style={{textAlign: "right"}}>
+                    <span style={{ color: "#c0392b", fontWeight: "bold", fontSize: "18px" }}>{d.blood_group}</span>
+                </div>
+            </div>
+            <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
+              <button 
+                onClick={() => handleMarkDone(d.request_id)}
+                style={{ backgroundColor: "#27ae60", fontSize: "12px", width: "100%" }}
+              >
+                Confirm Donation Received
+              </button>
+            </div>
           </div>
         ))
       }

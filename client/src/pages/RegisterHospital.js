@@ -1,145 +1,185 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Asset imports
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+const DefaultIcon = L.icon({
+    iconUrl: markerIcon,
+    shadowUrl: markerShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
 
 function RegisterHospital({ setPage }) {
     const [form, setForm] = useState({
+        rep_name: "",
         username: "",
         password: "",
         hospital_name: "",
         hospital_id: "",
         district: "",
-        city: "",
-        road: "",
-        postal_code: ""
+        lat: 7.8731, 
+        lng: 80.7718
     });
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    // 1. Initialize as empty arrays to prevent .filter() and .map() errors
+    const [masterHospitals, setMasterHospitals] = useState([]); 
+    const [filteredHospitals, setFilteredHospitals] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const handleChange = (e) => {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
+    const districts = ["Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Colombo", "Galle", "Gampaha", "Hambantota", "Jaffna", "Kalutara", "Kandy", "Kegalle", "Kilinochchi", "Kurunegala", "Mannar", "Matale", "Matara", "Moneragala", "Mullaitivu", "Nuwara Eliya", "Polonnaruwa", "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya"];
+
+    useEffect(() => {
+        fetch("http://localhost:5001/api/master-hospitals")
+            .then(res => res.json())
+            .then(data => {
+                // 2. Safety Check: Only set if data is an array
+                if (Array.isArray(data)) {
+                    setMasterHospitals(data);
+                } else {
+                    console.error("Expected array but got:", data);
+                    setMasterHospitals([]); 
+                }
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error("Error loading hospitals:", err);
+                setMasterHospitals([]); // Prevent crash on network error
+                setIsLoading(false);
+            });
+    }, []);
+
+    const handleDistrictChange = (e) => {
+        const selectedDist = e.target.value;
+        
+        // 3. Robust filtering with array check
+        const hospitalsToFilter = Array.isArray(masterHospitals) ? masterHospitals : [];
+        const filtered = hospitalsToFilter.filter(h => h.district === selectedDist);
+        
+        setFilteredHospitals(filtered);
+        
+        setForm({ 
+            ...form, 
+            district: selectedDist, 
+            hospital_name: "", 
+            hospital_id: "", 
+            lat: 7.8731, 
+            lng: 80.7718 
         });
     };
-    const validateForm = () => {
-        if (!form.username || !form.password || !form.hospital_name) {
-            setError("Please fill required fields");
-            return false;
-        }
 
-        if (form.password !== confirmPassword) {
-            setError("Passwords do not match");
-            return false;
-        }
+    const handleHospitalSelect = (e) => {
+        const selectedName = e.target.value;
+        const data = filteredHospitals.find(h => h.name === selectedName);
 
-        if (form.password.length < 6) {
-            setError("Password must be at least 6 characters");
-            return false;
+        if (data) {
+            setForm({
+                ...form,
+                hospital_name: selectedName,
+                hospital_id: data.official_id,
+                lat: parseFloat(data.lat),
+                lng: parseFloat(data.lng)
+            });
         }
-
-        return true;
     };
 
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
 
     const handleSubmit = async () => {
-        if (!validateForm()) return;
+        if (!form.username || !form.password || !form.hospital_name || !form.rep_name) {
+            alert("Please fill in all details and select your hospital.");
+            return;
+        }
 
-        setLoading(true);
-        setError("");
         try {
-            // Using the new Port 5001
             const res = await fetch("http://localhost:5001/register-hospital", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(form)
             });
 
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.message || "Hospital registration failed");
-            }
-
-            const data = await res.json();
-            alert(data.message || "Hospital Registered Successfully!");
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.message || "Registration failed");
+            
+            alert(`Success! ${form.hospital_name} is now registered under ${form.rep_name}.`);
             setPage("login");
-
         } catch (err) {
-            console.error("Hospital Registration Error:", err);
-            setError("Server connection failed");
-        }finally {
-            setLoading(false);
+            alert(err.message);
         }
     };
 
     return (
-        <div className="form-container">
-            <h2>Hospital Registration</h2>
+        <div className="App" style={{ maxWidth: "850px", margin: "auto" }}>
+            <h2>Hospital Onboarding</h2>
+            <p style={{fontSize: "14px", color: "#666"}}>Register your institution to the CareChain network.</p>
 
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", textAlign: "left", marginBottom: "20px" }}>
+                {/* Representative Details */}
+                <div style={{ background: "#fdfdfd", padding: "15px", borderRadius: "8px", border: "1px solid #eee" }}>
+                    <h4 style={{marginTop: 0, color: "#c0392b"}}>1. Representative Details</h4>
+                    
+                    <label>Hospital Representative Name</label>
+                    <input name="rep_name" value={form.rep_name} placeholder="e.g. Dr. A. Doctor_name" onChange={handleChange} />
+                    
+                    <label>Account Username</label>
+                    <input name="username" value={form.username} placeholder="hospital_user_123" onChange={handleChange} />
+                    
+                    <label>Password</label>
+                    <input type="password" name="password" value={form.password} placeholder="••••••••" onChange={handleChange} />
+                </div>
 
-            <div className="form-group">
-                <input name="username" placeholder="Username" value={form.username} onChange={handleChange} />
-            </div>
-            <div className="password-wrapper">
-                <input type={showPassword ? "text" : "password"} name="password" placeholder="Password" value={form.password} onChange={handleChange} />
+                {/* Hospital Linkage */}
+                <div style={{ background: "#fdfdfd", padding: "15px", borderRadius: "8px", border: "1px solid #eee" }}>
+                    <h4 style={{marginTop: 0, color: "#c0392b"}}>2. Hospital Information</h4>
+                    
+                    <label>District</label>
+                    <select name="district" value={form.district} onChange={handleDistrictChange}>
+                        <option value="">-- Select District --</option>
+                        {districts.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
 
-                {form.password && (
-                    <small style={{
-                        color:
-                            form.password.length < 6
-                                ? "red"
-                                : form.password.length < 10
-                                ? "orange"
-                                : "green"
-                    }}>
-                        Strength: {form.password.length < 6 ? "Weak" : form.password.length < 10 ? "Medium" : "Strong"}
-                    </small>
-                )}
-                <span
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="eye-icon"
+                    <label style={{marginTop: "10px", display: "block"}}>Select Hospital</label>
+                    <select 
+                        name="hospital_name" 
+                        value={form.hospital_name} 
+                        onChange={handleHospitalSelect}
+                        disabled={!form.district || isLoading}
                     >
-                    {showPassword ? "🙈" : "👁️"}
-                </span>
-            </div><br/>
-            
-            <div className="form-group">
-                <input
-                    type="password"
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                />
+                        <option value="">{isLoading ? "Loading..." : "-- Choose Hospital --"}</option>
+                        {Array.isArray(filteredHospitals) && filteredHospitals.map(h => (
+                            <option key={h.id || h.official_id} value={h.name}>{h.name}</option>
+                        ))}
+                    </select>
+
+                    <label style={{marginTop: "10px", display: "block"}}>Registration ID (Auto)</label>
+                    <input name="hospital_id" value={form.hospital_id} readOnly style={{background: "#f1f1f1"}} />
+                </div>
             </div>
 
-            <div className="form-group">
-                <input name="hospital_name" placeholder="Hospital Name" value={form.hospital_name} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-                <input name="hospital_id" placeholder="Official Hospital ID" value={form.hospital_id} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-                <input name="district" placeholder="District" value={form.district} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-                <input name="city" placeholder="City" value={form.city} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-                <input name="road" placeholder="Road" value={form.road} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-                <input name="postal_code" placeholder="Postal Code" value={form.postal_code} onChange={handleChange} />
+            <div className="map-container" style={{ height: "300px", border: "2px solid #ddd", borderRadius: "10px", overflow: "hidden" }}>
+                <MapContainer 
+                    center={[form.lat, form.lng]} 
+                    zoom={15} 
+                    key={`${form.lat}-${form.lng}`} 
+                    style={{height: '100%'}}
+                >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <Marker position={[form.lat, form.lng]} icon={DefaultIcon}>
+                        <Popup>{form.hospital_name || "Location Preview"}</Popup>
+                    </Marker>
+                </MapContainer>
             </div>
 
-            <button onClick={handleSubmit} disabled={loading}>
-                {loading ? "Registering..." : "Register Hospital"}
-            </button>
-            <br />
-            <button className="back-btn" onClick={() => setPage("login")}>
-                Back to Login
-            </button>
+            <div style={{marginTop: "25px", display: "flex", gap: "10px", justifyContent: "center"}}>
+                <button onClick={handleSubmit} style={{width: "250px", background: "#c0392b"}}>Complete Registration</button>
+                <button className="back-btn" onClick={() => setPage("login")} style={{width: "150px"}}>Cancel</button>
+            </div>
         </div>
     );
 }

@@ -1,286 +1,209 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for default Leaflet icons
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+const DefaultIcon = L.icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
+});
+
+// Custom Blinking Icon for Urgent Needs
+const BloodDropIcon = L.divIcon({
+  className: 'custom-div-icon',
+  html: `<div class="blood-drop-inner"></div>`,
+  iconSize: [30, 30],
+  iconAnchor: [15, 30]
+});
 
 function DonorDashboard({ user, logout }) {
-  const [section, setSection] = useState("profile");
+  const [section, setSection] = useState("map");
   const [requests, setRequests] = useState([]);
-  const [acceptedRequests, setAcceptedRequests] = useState([]);
+  const [hospitals, setHospitals] = useState([]); 
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [search, setSearch] = useState("");
-  const [filterDistrict, setFilterDistrict] = useState("");
-  const [history, setHistory] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const [statusFilter, setStatusFilter] = useState("all");
 
-  useEffect(() => {
-    const loadProfile = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`http://localhost:5001/donor-profile/${user.id}`);
-        if (!res.ok) throw new Error("Failed to fetch profile");
-        const data = await res.json();
-        setProfile(data);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+  // Memoized data loader to prevent infinite loops
+  const loadDashboardData = useCallback(async () => {
+    try {
+      const [hospRes, reqRes, profRes] = await Promise.all([
+        fetch(`http://localhost:5001/api/hospital-locations`),
+        fetch(`http://localhost:5001/api/all-requests`),
+        fetch(`http://localhost:5001/api/donor-profile/${user.id}`)
+      ]);
+
+      if (!hospRes.ok || !reqRes.ok) throw new Error("Server communication failed.");
+
+      const hospData = await hospRes.json();
+      const reqData = await reqRes.json();
+      
+      // Safety check: ensure we always have arrays
+      setHospitals(Array.isArray(hospData) ? hospData : []);
+      setRequests(Array.isArray(reqData) ? reqData : []);
+
+      if (profRes.ok) {
+        const profData = await profRes.json();
+        setProfile(profData);
       }
-    };
-
-    loadProfile();
+    } catch (err) {
+      console.error("Dashboard Sync Error:", err);
+      setError("Unable to load map data. Please check your server connection.");
+    }
   }, [user.id]);
 
-  
-  const loadRequests = async () => {
+  useEffect(() => {
     setLoading(true);
-    try {
-      const res = await fetch(`http://localhost:5001/get-requests/${user.id}`);
-      if (!res.ok) throw new Error("Failed to fetch requests");
-      const data = await res.json();
-      setRequests(data.filter(r => r.status === "open"));
-      setAcceptedRequests(data.filter(r => r.status === "accepted"));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const loadHistory = async () => {
-    try {
-      const res = await fetch(`http://localhost:5001/donation-history/${user.id}`);
-      const data = await res.json();
-      setHistory(data);
-    } catch (err) {
-      alert("Failed to load history");
-    }
-  };
-
-
-  const filteredRequests = requests.filter(r =>
-    r.hospital_name.toLowerCase().includes(search.toLowerCase()) &&
-    (filterDistrict === "" || r.district === filterDistrict)
-  );
-
-  const loadNotifications = async () => {
-    try {
-      const res = await fetch(`http://localhost:5001/donor-notifications/${user.id}`);
-      const data = await res.json();
-      setNotifications(data);
-    } catch (err) {
-      alert("Failed to load notifications");
-    }
-  };
-
-  const exportData = () => {
-    const data = JSON.stringify(acceptedRequests, null, 2);
-    const blob = new Blob([data], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "donation-report.txt";
-    a.click();
-  };
-
+    loadDashboardData().finally(() => setLoading(false));
+  }, [loadDashboardData]);
 
   const acceptRequest = async (request_id) => {
     try {
-      const res = await fetch("http://localhost:5001/accept-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ request_id, donor_user_id: user.id }),
-      });
-      if (!res.ok) throw new Error("Failed to accept request");
-      alert("Request Accepted");
-      loadRequests();
+        const res = await fetch("http://localhost:5001/api/accept-request", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ request_id, donor_user_id: user.id }),
+        });
+        if (!res.ok) throw new Error("Failed to accept request.");
+        alert("Success! Request accepted. Please visit the hospital.");
+        loadDashboardData(); // Refresh both map and list
     } catch (err) {
-      alert(err.message);
+        alert(err.message);
     }
   };
 
-  const closeRequest = async (request_id) => {
-    try {
-      const res = await fetch("http://localhost:5001/close-request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ request_id }),
-      });
-      if (!res.ok) throw new Error("Failed to close request");
-      alert("Request Closed");
-      loadRequests();
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  const updateProfile = async () => {
-    if (!profile.fullname || !profile.telephone) {
-      alert("Fullname and Telephone are required");
-      return;
-    }
-    try {
-      const res = await fetch("http://localhost:5001/update-donor", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          user_id: user.id,
-          fullname: profile.fullname,
-          telephone: profile.telephone,
-          district: profile.district,
-          city: profile.city,
-          road: profile.road,
-          postal_code: profile.postal_code,
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to update profile");
-      alert("Profile Updated");
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  const deleteAccount = async () => {
-    const confirmDelete = window.confirm("Are you sure you want to delete account?");
-    if (!confirmDelete) return;
-    try {
-      const res = await fetch("http://localhost:5001/delete-donor-account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user.id }),
-      });
-      if (!res.ok) throw new Error("Failed to delete account");
-      alert("Account Deleted");
-      logout();
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  // ----------------- RENDER -----------------
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p style={{ color: "red" }}>Error: {error}</p>;
+  if (loading) return <div className="App" style={{padding: "50px"}}><h3>Syncing CareChain Data...</h3></div>;
 
   return (
-    <div style={{ padding: "20px", maxWidth: "800px", margin: "auto" }}>
-      <h2>Donor Dashboard</h2>
-      <p>Welcome, <strong>{user.username}</strong></p>
+    <div className="App" style={{ maxWidth: "1000px", margin: "20px auto" }}>
+      <style>{`
+        .blood-drop-inner {
+            width: 16px; height: 16px;
+            background-color: #c0392b;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            margin: 7px auto;
+            animation: pulse-red 1.2s infinite;
+            border: 2px solid white;
+            box-shadow: 0 0 10px rgba(192, 57, 43, 0.6);
+        }
+        @keyframes pulse-red {
+            0% { transform: rotate(-45deg) scale(0.9); opacity: 0.8; }
+            50% { transform: rotate(-45deg) scale(1.2); opacity: 1; }
+            100% { transform: rotate(-45deg) scale(0.9); opacity: 0.8; }
+        }
+        .fade-in { animation: fadeIn 0.4s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      `}</style>
 
-      <div style={{ marginBottom: "20px" }}>
-        <button onClick={() => setSearch("")}>Reset Filters</button>
-        <button onClick={() => { setSection("history"); loadHistory(); }} style={{ marginLeft: "10px" }}>Donation History</button>
-        <button onClick={() => { setSection("notifications"); loadNotifications(); }} style={{ marginLeft: "10px" }}>Notifications ({notifications.length})</button>
-        <button onClick={exportData} style={{ marginLeft: "10px" }}>Export Report</button>
-        <button onClick={() => setSection("profile")}>Profile</button>
-        <button onClick={() => { setSection("requests"); loadRequests(); }} style={{ marginLeft: "10px" }}>Blood Requests</button>
-        <button onClick={() => setSection("accepted")} style={{ marginLeft: "10px" }}>Accepted Donations</button>
-        <button onClick={logout} style={{ marginLeft: "10px" }}>Logout</button>
-        <button onClick={deleteAccount} style={{ marginLeft: "10px", color: "red" }}>Delete Account</button>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+         <div style={{ textAlign: "left" }}>
+            <h2 style={{margin: 0, color: "#c0392b"}}>Donor Dashboard</h2>
+            <p style={{margin: 0, fontSize: "14px", color: "#666"}}>Welcome back, <b>{profile?.fullname || user.username}</b></p>
+         </div>
+         <button onClick={logout} style={{background: "#2c3e50", width: "auto"}}>Logout</button>
       </div>
 
-      {section === "profile" && profile && (
-        <div>
-          <h3>Your Profile</h3>
-          <p>Blood Group: {profile.blood_group}</p>
-
-          <input value={profile.fullname} placeholder="Fullname"
-            onChange={e => setProfile({ ...profile, fullname: e.target.value })} /><br /><br />
-          <input value={profile.telephone} placeholder="Telephone"
-            onChange={e => setProfile({ ...profile, telephone: e.target.value })} /><br /><br />
-          <input value={profile.district} placeholder="District"
-            onChange={e => setProfile({ ...profile, district: e.target.value })} /><br /><br />
-          <input value={profile.city} placeholder="City"
-            onChange={e => setProfile({ ...profile, city: e.target.value })} /><br /><br />
-          <input value={profile.road} placeholder="Road"
-            onChange={e => setProfile({ ...profile, road: e.target.value })} /><br /><br />
-          <input value={profile.postal_code} placeholder="Postal Code"
-            onChange={e => setProfile({ ...profile, postal_code: e.target.value })} /><br /><br />
-
-          <button onClick={updateProfile}>Save Changes</button>
-        </div>
-      )}
-
-      {section === "requests" && (
-        <div>
-          <h3>Open Blood Requests</h3>
-          <input
-            placeholder="Search hospital..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-          <input
-            placeholder="Filter district..."
-            value={filterDistrict}
-            onChange={(e) => setFilterDistrict(e.target.value)}
-            style={{ marginLeft: "10px" }}
-          />
-          {requests.length === 0 ? <p>No open requests</p> :
-            filteredRequests.map(r => (
-              <div key={r.id} style={{ border: "1px solid black", padding: "10px", margin: "10px 0" }}>
-                <p>Hospital: {r.hospital_name}</p>
-                <p>District: {r.district}</p>
-                <p>Blood Needed: {r.blood_group}</p>
-                <p>Status: {r.status}</p>
-                {r.status === "open" && (
-                  <>
-                    <button onClick={() => acceptRequest(r.id)}>Accept</button>
-                    <button onClick={() => closeRequest(r.id)} style={{ marginLeft: "10px" }}>Close</button>
-                  </>
-                )}
-              </div>
-            ))
-          }
-        </div>
-      )}
-
-      {section === "accepted" && (
-        <div>
-          <h3>Accepted Requests</h3>
-          {acceptedRequests.length === 0 ? <p>No accepted requests yet</p> :
-            acceptedRequests.map(r => (
-              <div key={r.id} style={{ border: "1px solid green", padding: "10px", margin: "10px 0", backgroundColor: "#f0fff0" }}>
-                <p>Hospital: {r.hospital_name}</p>
-                <p>District: {r.district}</p>
-                <p>Blood Needed: {r.blood_group}</p>
-                <p>Status: {r.status}</p>
-                <button onClick={() => closeRequest(r.id)}>Mark Closed</button>
-              </div>
-            ))
-          }
-        </div>
-      )}
-
-      {section === "history" && (
-        <div>
-          <h3>Donation History</h3>
-          {history.length === 0 ? (<p>No history found</p>) : (
-            history.map(h => (
-              <div key={h.id} style={{ border: "1px solid blue", margin: "10px", padding: "10px" }}>
-                <p>Hospital: {h.hospital_name}</p>
-                <p>Date: {h.date}</p>
-                <p>Blood Group: {h.blood_group}</p>
-              </div>
-            ))
-          )}
-        </div>
-      )}
-
-      {section === "notifications" && (
-        <div>
-          <h3>Notifications</h3>
-            {notifications.length === 0 ? (
-                <p>No notifications</p>
-                ) : (
-              notifications.map(n => (
-              <div key={n.id} style={{ background: "#fff3cd", padding: "10px", margin: "10px 0" }}>
-                <p>{n.message}</p>
-                <small>{n.created_at}</small>
-              </div>
-                ))
-            )}
+      {error && (
+        <div style={{ color: "#721c24", background: "#f8d7da", padding: "12px", borderRadius: "8px", marginBottom: "20px", border: "1px solid #f5c6cb" }}>
+            {error} <button onClick={loadDashboardData} style={{padding: "2px 10px", marginLeft: "10px", width: "auto", fontSize: "12px"}}>Retry</button>
         </div>
       )}
       
+      {/* Navigation */}
+      <div style={{ marginBottom: "25px", display: "flex", gap: "10px" }}>
+        <button onClick={() => setSection("map")} style={{ backgroundColor: section === "map" ? "#c0392b" : "#95a5a6", flex: 1 }}>Hospital Map</button> 
+        <button onClick={() => setSection("requests")} style={{ backgroundColor: section === "requests" ? "#c0392b" : "#95a5a6", flex: 1 }}>List View</button>
+        <button onClick={() => setSection("profile")} style={{ backgroundColor: section === "profile" ? "#c0392b" : "#95a5a6", flex: 1 }}>My Profile</button>
+      </div>
+
+      {/* SECTION: MAP */}
+      {section === "map" && (
+        <div className="fade-in">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+            <h3 style={{margin: 0}}>Sri Lanka Urgent Needs</h3>
+            <span style={{ fontSize: "12px", color: "#c0392b", fontWeight: "bold" }}>🚨 Blinking = Urgent</span>
+          </div>
+          
+          <div style={{ height: "480px", border: "1px solid #ddd", borderRadius: "12px", overflow: "hidden" }}>
+            <MapContainer center={[7.8731, 80.7718]} zoom={7.5} style={{ height: "100%", width: "100%" }}>
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              
+              {hospitals.map((h) => {
+                // Check if this specific hospital has an open request
+                const hasUrgent = h.urgent_count > 0;
+                const activeReq = requests.find(req => req.hospital_id === h.id);
+
+                return (
+                  <Marker 
+                    key={h.id} 
+                    position={[parseFloat(h.lat), parseFloat(h.lng)]} 
+                    icon={hasUrgent ? BloodDropIcon : DefaultIcon}
+                  >
+                    <Popup>
+                      <div style={{ minWidth: "140px" }}>
+                        <b style={{ color: "#c0392b" }}>{h.hospital_name}</b><br />
+                        <span style={{ fontSize: "11px" }}>{h.district}</span>
+                        <hr style={{ margin: "8px 0", border: "0.5px solid #eee" }} />
+                        
+                        {activeReq ? (
+                          <div style={{ textAlign: "center" }}>
+                            <p style={{ color: "#c0392b", fontWeight: "bold", margin: "5px 0" }}>Need: {activeReq.blood_group}</p>
+                            <button onClick={() => acceptRequest(activeReq.id)} style={{ padding: "6px", fontSize: "12px", width: "100%" }}>Accept Now</button>
+                          </div>
+                        ) : (
+                          <p style={{ color: "#27ae60", margin: 0, fontSize: "12px" }}>✅ Stock Stable</p>
+                        )}
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
+            </MapContainer>
+          </div>
+        </div>
+      )}
+
+      {/* SECTION: LIST VIEW */}
+      {section === "requests" && (
+        <div className="fade-in" style={{ textAlign: "left" }}>
+          <h3>Available Blood Requests</h3>
+          {requests.length === 0 ? <p style={{color: "#999"}}>No active requests found at this moment.</p> :
+            requests.map(r => (
+              <div key={r.id} style={{ background: "white", border: "1px solid #eee", padding: "15px", borderRadius: "10px", marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 2px 4px rgba(0,0,0,0.05)" }}>
+                <div>
+                    <h4 style={{margin: "0 0 5px 0"}}>{r.hospital_name}</h4>
+                    <span style={{color: "#c0392b", fontWeight: "bold"}}>{r.blood_group} Needed</span>
+                </div>
+                <button onClick={() => acceptRequest(r.id)} style={{ width: "auto", padding: "8px 20px" }}>Accept</button>
+              </div>
+            ))
+          }
+        </div>
+      )}
+
+      {/* SECTION: PROFILE */}
+      {section === "profile" && profile && (
+        <div style={{ textAlign: "left" }} className="fade-in">
+          <h3>Your Donor Profile</h3>
+          <div style={{ background: "white", padding: "25px", borderRadius: "12px", border: "1px solid #eee" }}>
+              <div style={{display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px"}}>
+                  <p><b>Name:</b> {profile.fullname}</p>
+                  <p><b>NIC:</b> {profile.nic}</p>
+                  <p><b>Blood Type:</b> <span style={{color: "#c0392b", fontWeight: "bold"}}>{profile.blood_group}</span></p>
+                  <p><b>District:</b> {profile.district}</p>
+                  <p><b>Contact:</b> {profile.telephone}</p>
+              </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

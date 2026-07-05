@@ -33,7 +33,7 @@ Database:
 ## How to Run
 
 Backend:
-1. Go to backend folder
+1. Go to server folder
 2. Run `node server.js`
 
 Frontend:

@@ -14,10 +14,8 @@ function RegisterDonor({ setPage }) {
         postal_code: ""
     });
 
-    const [showPassword, setShowPassword] = useState(false);
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
+    // Sri Lankan Districts for consistency
+    const districts = ["Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Colombo", "Galle", "Gampaha", "Hambantota", "Jaffna", "Kalutara", "Kandy", "Kegalle", "Kilinochchi", "Kurunegala", "Mannar", "Matale", "Matara", "Moneragala", "Mullaitivu", "Nuwara Eliya", "Polonnaruwa", "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya"];
 
     const handleChange = (e) => {
         setForm({
@@ -26,31 +24,16 @@ function RegisterDonor({ setPage }) {
         });
     };
 
-    const validateForm = () => {
-        if (!form.username || !form.password || !form.fullname) {
-            setError("Please fill all required fields");
-            return false;
-        }
-
-        if (form.password !== confirmPassword) {
-            setError("Passwords do not match");
-            return false;
-        }
-
-        if (form.password.length < 6) {
-            setError("Password must be at least 6 characters");
-            return false;
-        }
-
-        return true;
-    };
-
     const handleSubmit = async () => {
+        // Validation
+        const requiredFields = ['username', 'password', 'fullname', 'nic', 'blood_group', 'district'];
+        for (let field of requiredFields) {
+            if (!form[field]) {
+                alert(`Please fill in the ${field.replace('_', ' ')} field.`);
+                return;
+            }
+        }
 
-        if (!validateForm()) return;
-
-        setLoading(true);
-        setError("");
         try {
             const res = await fetch("http://localhost:5001/register-donor", {
                 method: "POST",
@@ -59,105 +42,50 @@ function RegisterDonor({ setPage }) {
             });
 
             if (!res.ok) {
-                // Handle server-side errors (e.g., 400 or 500)
                 const errorData = await res.json();
                 throw new Error(errorData.message || "Registration failed");
             }
 
-            const data = await res.json();
-            alert(data.message || "Registration successful!");
+            alert("Registration successful! You can now log in.");
             setPage("login");
 
         } catch (err) {
-            console.error("Registration Error:", err);
-            setError("Could not connect to server");
-        }finally {
-        setLoading(false);
+            alert(err.message);
         }
     };
 
     return (
-        <div className="form-container">
+        <div className="App" style={{ marginTop: "20px" }}>
             <h2>Donor Registration</h2>
-            {error && <p style={{ color: "red" }}>{error}</p>}
 
-            <div className="form-group">
-                <input name="username" placeholder="Username" value={form.username} onChange={handleChange} />
-            </div>
-
-            <div className="form-group password-group">
-                
-                <div className="password-wrapper">
-                    <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        placeholder="Password"
-                        value={form.password}
-                        onChange={handleChange}
-                    />
-                    
-                    {form.password && (
-                        <small style={{
-                            color:
-                                form.password.length < 6
-                                    ? "red"
-                                    : form.password.length < 10
-                                    ? "orange"
-                                    : "green"
-                        }}>
-                            Strength: {form.password.length < 6 ? "Weak" : form.password.length < 10 ? "Medium" : "Strong"}
-                        </small>
-                    )}
-
-                    <span
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="eye-icon"
-                    >
-                        {showPassword ? "🙈" : "👁️"}
-                    </span>
-                </div>
-            </div>
-
-            <div className="form-group">
-                <input
-                    type="password"
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-            </div>
-            
-            <div className="form-group">
+            <input name="username" placeholder="Username / Email" value={form.username} onChange={handleChange} />
+            <input type="password" name="password" placeholder="Password" value={form.password} onChange={handleChange} />
             <input name="fullname" placeholder="Full Name" value={form.fullname} onChange={handleChange} />
-            </div>
-            <div className="form-group">
             <input name="nic" placeholder="NIC Number" value={form.nic} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-            <input name="telephone" placeholder="Telephone" value={form.telephone} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-            <input name="blood_group" placeholder="Blood Group" value={form.blood_group} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-            <input name="district" placeholder="District" value={form.district} onChange={handleChange} />
-            </div>
-            <div className="form-group">
+            <input type="tel" name="telephone" placeholder="Telephone (e.g. 0771234567)" value={form.telephone} onChange={handleChange} />
+
+            <select name="blood_group" value={form.blood_group} onChange={handleChange}>
+                <option value="">Select Blood Group</option>
+                {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(bg => (
+                    <option key={bg} value={bg}>{bg}</option>
+                ))}
+            </select>
+
+            <select name="district" value={form.district} onChange={handleChange}>
+                <option value="">Select District</option>
+                {districts.map(d => (
+                    <option key={d} value={d}>{d}</option>
+                ))}
+            </select>
+
             <input name="city" placeholder="City" value={form.city} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-            <input name="road" placeholder="Road" value={form.road} onChange={handleChange} />
-            </div>
-            <div className="form-group">
-            <input name="postal_code" placeholder="Postal Code" value={form.postal_code} onChange={handleChange} />
-            </div>
+            <input name="road" placeholder="Road Name" value={form.road} onChange={handleChange} />
+            <input type="number" name="postal_code" placeholder="Postal Code" value={form.postal_code} onChange={handleChange} />
+
+            <button onClick={handleSubmit}>Register as Donor</button>
             
-            <button onClick={handleSubmit} disabled={loading}>
-                {loading ? "Registering..." : "Submit"}
-            </button>
-            <br /><br />
-            <button onClick={() => setPage("login")} style={{ background: "none", border: "none", color: "blue", cursor: "pointer" }}>
-                Back to Login
+            <button className="back-btn" onClick={() => setPage("login")}>
+                Already have an account? Back to Login
             </button>
         </div>
     );

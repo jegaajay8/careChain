@@ -1,38 +1,32 @@
 import React from "react";
-// React library import for building UI components
-
 import ReactDOM from "react-dom/client";
-// ReactDOM is responsible for rendering React components into the webpage
-
 import App from "./App";
-// Importing the main App component
 
-import "./style.css";
-// Importing the main stylesheet for global styles
+// 1. GLOBAL STYLES
+import "./style.css"; 
 
-// Creating the root container using React 18 syntax
-const rootElement = ReactDOM.createRoot(
-  document.getElementById("root")
-);
+// 2. LEAFLET MAP STYLES
+import "leaflet/dist/leaflet.css";
 
-// Rendering the application to the browser
-rootElement.render(
+// 3. LEAFLET ICON FIX
+// This ensures the blue pins appear correctly on the map.
+import L from 'leaflet';
+import icon from 'leaflet/dist/images/marker-icon.png';
+import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
+let DefaultIcon = L.icon({
+    iconUrl: icon,
+    shadowUrl: iconShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41]
+});
+
+// Apply this icon to all markers by default
+L.Marker.prototype.options.icon = DefaultIcon;
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
   <React.StrictMode>
-    {/*
-      React.StrictMode is used only during development.
-      It helps identify unsafe lifecycle methods,
-      deprecated features, and other potential issues.
-    */}
-
     <App />
-    
-    {/*
-      App component acts as the starting point
-      of the entire CareChain application.
-    */}
-
-    {/* Additional comments can be added here if needed */}
-    
   </React.StrictMode>
 );
